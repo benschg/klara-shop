@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Drawer,
   Box,
@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import { Delete, Add, Remove, Close } from '@mui/icons-material';
 import { useCartStore } from '../stores/cartStore';
+import { CheckoutDialog } from './CheckoutDialog';
 import type { CartItem } from '../stores/cartStore';
 
 interface CartDrawerProps {
@@ -25,6 +26,7 @@ interface CartDrawerProps {
 
 export const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
   const { items, totalItems, totalPrice, updateQuantity, removeItem } = useCartStore();
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   const handleQuantityChange = (item: CartItem, newQuantity: number) => {
     if (newQuantity > 0) {
@@ -46,7 +48,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
   const drawerWidth = 400;
 
   return (
-    <Drawer
+    <>
+      <Drawer
       anchor="right"
       open={open}
       onClose={onClose}
@@ -177,9 +180,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
                 fullWidth
                 size="large"
                 sx={{ mb: 1 }}
-                onClick={() => {
-                  alert('Checkout functionality would be implemented here');
-                }}
+                onClick={() => setCheckoutOpen(true)}
+                disabled={items.length === 0}
               >
                 Zur Kasse
               </Button>
@@ -195,6 +197,15 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
           </>
         )}
       </Box>
-    </Drawer>
+      </Drawer>
+
+      <CheckoutDialog
+        open={checkoutOpen}
+        onClose={() => {
+          setCheckoutOpen(false);
+          onClose(); // Also close the cart drawer
+        }}
+      />
+    </>
   );
 };
