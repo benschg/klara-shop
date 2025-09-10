@@ -12,7 +12,6 @@ import {
 } from '@mui/material';
 import { ArrowBackIos, ArrowForwardIos, CheckCircle, ShoppingCart } from '@mui/icons-material';
 import { VariantTiles } from './VariantTiles';
-import { OptionsSelector } from './OptionsSelector';
 import { useCartStore } from '../stores/cartStore';
 import { useToast } from '../contexts/ToastContext';
 // Article type definition
@@ -56,8 +55,9 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
   onImageError 
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [selectedVariant, setSelectedVariant] = useState<any>(null);
+  const [variantPrice, setVariantPrice] = useState<number | null>(null);
   const addItem = useCartStore(state => state.addItem);
   const { showCartSuccessToast } = useToast();
   
@@ -67,8 +67,14 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
     }
   };
 
-  const handleOptionsSelectionChange = (selections: Record<string, string>) => {
-    setSelectedOptions(selections);
+
+  const handleVariantPriceChange = (price: number | null, variant: any) => {
+    setVariantPrice(price);
+    setSelectedVariant(variant);
+    console.log(`=== ARTICLE CARD VARIANT PRICE DEBUG ===`);
+    console.log('Variant price received:', price);
+    console.log('Selected variant:', variant);
+    console.log(`=== END ARTICLE CARD VARIANT PRICE DEBUG ===`);
   };
   const getDisplayName = () => {
     return article.nameEN || article.nameDE || 'Unnamed Article';
@@ -103,19 +109,27 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
     return validPeriod?.price || null;
   };
 
-  const price = getCurrentPrice();
+  const basePrice = getCurrentPrice();
+  // Priority: Variant price > Base price (simplified - no separate option pricing)
+  const displayPrice = variantPrice !== null ? variantPrice : basePrice;
 
-  // Check if options are required and all are selected
-  const hasOptions = article.options && article.options.length > 0;
-  const allOptionsSelected = hasOptions ? 
-    article.options!.every(option => selectedOptions[option.name]) : true;
+  // Debug price calculation
+  console.log(`=== SIMPLIFIED PRICE CALCULATION DEBUG for Article ${article.id} ===`);
+  console.log('basePrice:', basePrice);
+  console.log('variantPrice:', variantPrice);
+  console.log('displayPrice (final):', displayPrice);
+  console.log(`=== END SIMPLIFIED PRICE CALCULATION DEBUG ===`);
+
+  // Check if variant is required and selected
+  const hasVariants = article.hasVariant;
+  const variantSelected = selectedVariant !== null;
 
   const handleAddToCart = async () => {
-    if (!article.id || !price || isAddingToCart) return;
+    if (!article.id || !displayPrice || isAddingToCart) return;
     
-    // Check if all required options are selected
-    if (hasOptions && !allOptionsSelected) {
-      alert('Bitte wähle alle Optionen aus bevor du das Produkt in den Warenkorb legst.');
+    // Check if variant is required but not selected
+    if (hasVariants && !variantSelected) {
+      alert('Bitte wähle eine Variante aus bevor du das Produkt in den Warenkorb legst.');
       return;
     }
 
@@ -123,24 +137,29 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
 
     const cartItem = {
       id: article.id,
-      articleNumber: article.articleNumber,
-      name: getDisplayName(),
-      price: price,
+      articleNumber: selectedVariant?.number || article.articleNumber, // Use variant number if available
+      name: selectedVariant?.nameDE || getDisplayName(), // Use variant name if available
+      price: displayPrice,
       imageUrl: images.length > 0 ? getProxiedImageUrl(images[currentImageIndex]) : undefined,
-      selectedOptions: hasOptions ? selectedOptions : undefined,
+      selectedVariant: selectedVariant ? {
+        id: selectedVariant.id,
+        number: selectedVariant.number,
+        name: selectedVariant.nameDE,
+        options: selectedVariant.variantOptionValues
+      } : undefined,
     };
 
     // Add to cart
     addItem(cartItem);
     
     // Show success toast with product info
-    const selectedOptionsText = hasOptions && Object.keys(selectedOptions).length > 0 
-      ? ` (${Object.entries(selectedOptions).map(([key, value]) => `${value}`).join(', ')})`
+    const variantText = selectedVariant?.variantOptionValues?.length > 0 
+      ? ` (${selectedVariant.variantOptionValues.join(', ')})`
       : '';
     
     showCartSuccessToast(
       `In den Warenkorb gelegt!`,
-      `${getDisplayName()}${selectedOptionsText}`,
+      `${cartItem.name}${variantText}`,
       cartItem.imageUrl
     );
 
@@ -284,27 +303,31 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
           )}
         </Box>
 
-        {/* Show options selector if article has options */}
-        {article.options && article.options.length > 0 && (
-          <OptionsSelector
-            options={article.options}
-            onSelectionChange={handleOptionsSelectionChange}
-          />
-        )}
-        
-        {/* Show variant tiles for articles with hasVariant but no options */}
-        {article.hasVariant && article.id && (!article.options || article.options.length === 0) && (
-          <VariantTiles 
-            articleId={article.id} 
-            onVariantChange={handleVariantImageChange}
-            totalImages={images.length}
-          />
-        )}
+        {/* Show variant selector for articles with variants (consolidates options and variants) */}
+        {(() => {
+          const showVariants = article.hasVariant && article.id;
+          console.log(`=== VARIANT TILES RENDER CHECK for Article ${article.id} ===`);
+          console.log('hasVariant:', article.hasVariant);
+          console.log('article.id:', article.id);
+          console.log('has options (legacy):', article.options?.length || 0);
+          console.log('showVariants:', showVariants);
+          console.log(`=== END VARIANT TILES RENDER CHECK ===`);
+          
+          return showVariants ? (
+            <VariantTiles 
+              articleId={article.id!} 
+              articleOptions={article.options} // Pass the option structure
+              onVariantChange={handleVariantImageChange}
+              onVariantPriceChange={handleVariantPriceChange}
+              totalImages={images.length}
+            />
+          ) : null;
+        })()}
 
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto' }}>
-          {price && (
+          {displayPrice && (
             <Typography variant="h6" color="primary">
-              CHF {price.toFixed(2)}
+              CHF {displayPrice.toFixed(2)}
             </Typography>
           )}
           
@@ -312,11 +335,11 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
             variant="contained" 
             size="small"
             onClick={handleAddToCart}
-            disabled={!price || (hasOptions && !allOptionsSelected) || isAddingToCart}
+            disabled={!displayPrice || (hasVariants && !variantSelected) || isAddingToCart}
             startIcon={
               isAddingToCart ? (
                 <CircularProgress size={16} color="inherit" />
-              ) : hasOptions && !allOptionsSelected ? null : (
+              ) : hasVariants && !variantSelected ? null : (
                 <ShoppingCart fontSize="small" />
               )
             }
@@ -335,8 +358,8 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
           >
             {isAddingToCart 
               ? 'Hinzugefügt!' 
-              : hasOptions && !allOptionsSelected 
-                ? 'Optionen wählen' 
+              : hasVariants && !variantSelected 
+                ? 'Variante wählen' 
                 : 'In den Warenkorb'
             }
           </Button>

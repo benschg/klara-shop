@@ -29,6 +29,7 @@ export type Article = {
   productType: ProductType;
   onlineShopCategories?: ArticleCategoryRef[];
   onlineShopFilters?: ArticleFilterRef[];
+  options?: ArticleOption[];
 }
 
 export interface PricePeriod {
@@ -53,6 +54,16 @@ export interface ArticleFilterRef {
   id?: string;
   href?: string;
   name?: string;
+}
+
+export interface ArticleOptionValue {
+  name: string;
+  price?: number; // Additional price for this option value
+}
+
+export interface ArticleOption {
+  name: string;
+  values: (string | ArticleOptionValue)[]; // Support both simple strings and objects with pricing
 }
 
 export interface ArticlesResponse {

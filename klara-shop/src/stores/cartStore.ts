@@ -9,7 +9,12 @@ export type CartItem = {
   price: number;
   quantity: number;
   imageUrl?: string;
-  selectedOptions?: Record<string, string>;
+  selectedVariant?: {
+    id: string;
+    number: string;
+    name: string;
+    options: string[];
+  };
 };
 
 // Cart store state
@@ -22,25 +27,25 @@ interface CartState {
 // Cart store actions
 interface CartActions {
   addItem: (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => void;
-  removeItem: (id: string, selectedOptions?: Record<string, string>) => void;
-  updateQuantity: (id: string, quantity: number, selectedOptions?: Record<string, string>) => void;
+  removeItem: (id: string, selectedVariant?: { id: string }) => void;
+  updateQuantity: (id: string, quantity: number, selectedVariant?: { id: string }) => void;
   clearCart: () => void;
-  getCartItemKey: (id: string, selectedOptions?: Record<string, string>) => string;
+  getCartItemKey: (id: string, selectedVariant?: { id: string }) => string;
 }
 
 // Combined cart store type
 type CartStore = CartState & CartActions;
 
-// Create a unique key for cart items based on id and selected options
-const getCartItemKey = (id: string, selectedOptions?: Record<string, string>): string => {
-  if (!selectedOptions || Object.keys(selectedOptions).length === 0) {
-    return id;
+// Create a unique key for cart items based on id and variant
+const getCartItemKey = (id: string, selectedVariant?: { id: string }): string => {
+  let key = id;
+  
+  // Add variant ID if present
+  if (selectedVariant?.id) {
+    key += `#variant:${selectedVariant.id}`;
   }
-  const optionsKey = Object.entries(selectedOptions)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, value]) => `${key}:${value}`)
-    .join('|');
-  return `${id}#${optionsKey}`;
+  
+  return key;
 };
 
 // Calculate totals helper
@@ -62,11 +67,11 @@ export const useCartStore = create<CartStore>()(
       // Actions
       addItem: (item) => {
         const { quantity = 1, ...itemData } = item;
-        const itemKey = getCartItemKey(itemData.id, itemData.selectedOptions);
+        const itemKey = getCartItemKey(itemData.id, itemData.selectedVariant);
         
         set((state) => {
           const existingItemIndex = state.items.findIndex(item => 
-            getCartItemKey(item.id, item.selectedOptions) === itemKey
+            getCartItemKey(item.id, item.selectedVariant) === itemKey
           );
 
           let newItems: CartItem[];
@@ -94,12 +99,12 @@ export const useCartStore = create<CartStore>()(
         });
       },
 
-      removeItem: (id, selectedOptions) => {
-        const itemKey = getCartItemKey(id, selectedOptions);
+      removeItem: (id, selectedVariant) => {
+        const itemKey = getCartItemKey(id, selectedVariant);
         
         set((state) => {
           const newItems = state.items.filter(item => 
-            getCartItemKey(item.id, item.selectedOptions) !== itemKey
+            getCartItemKey(item.id, item.selectedVariant) !== itemKey
           );
 
           const { totalItems, totalPrice } = calculateTotals(newItems);
@@ -113,18 +118,18 @@ export const useCartStore = create<CartStore>()(
         });
       },
 
-      updateQuantity: (id, quantity, selectedOptions) => {
+      updateQuantity: (id, quantity, selectedVariant) => {
         if (quantity <= 0) {
           // Remove item if quantity is 0 or negative
-          get().removeItem(id, selectedOptions);
+          get().removeItem(id, selectedVariant);
           return;
         }
 
-        const itemKey = getCartItemKey(id, selectedOptions);
+        const itemKey = getCartItemKey(id, selectedVariant);
         
         set((state) => {
           const newItems = state.items.map(item => 
-            getCartItemKey(item.id, item.selectedOptions) === itemKey
+            getCartItemKey(item.id, item.selectedVariant) === itemKey
               ? { ...item, quantity }
               : item
           );

@@ -9,28 +9,75 @@ import {
 } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material/Select';
 
+type OptionValue = {
+  name: string;
+  price?: number; // Additional price for this option value
+};
+
 type Option = {
   name: string;
-  values: string[];
+  values: (string | OptionValue)[]; // Support both simple strings and objects with pricing
 };
 
 interface OptionsSelectorProps {
   options: Option[];
+  basePrice?: number;
   onSelectionChange?: (selections: Record<string, string>) => void;
+  onPriceChange?: (additionalPrice: number, totalPrice: number) => void;
 }
 
 export const OptionsSelector: React.FC<OptionsSelectorProps> = ({ 
   options, 
-  onSelectionChange 
+  basePrice = 0,
+  onSelectionChange,
+  onPriceChange 
 }) => {
   const [selections, setSelections] = useState<Record<string, string>>({});
+
+  // Helper function to get option value object
+  const getOptionValue = (option: Option, valueName: string): OptionValue | null => {
+    const value = option.values.find(v => {
+      if (typeof v === 'string') return v === valueName;
+      return v.name === valueName;
+    });
+    
+    if (!value) return null;
+    if (typeof value === 'string') return { name: value };
+    return value;
+  };
+
+  // Helper function to get display name for option value
+  const getValueDisplayName = (value: string | OptionValue): string => {
+    return typeof value === 'string' ? value : value.name;
+  };
+
+  // Helper function to get additional price for current selections
+  const getAdditionalPrice = (): number => {
+    return options.reduce((total, option) => {
+      const selectedValueName = selections[option.name];
+      if (!selectedValueName) return total;
+      
+      const optionValue = getOptionValue(option, selectedValueName);
+      return total + (optionValue?.price || 0);
+    }, 0);
+  };
+
+  // Helper function to get total price
+  const getTotalPrice = (): number => {
+    return basePrice + getAdditionalPrice();
+  };
 
   // Update parent when selection changes
   useEffect(() => {
     if (onSelectionChange) {
       onSelectionChange(selections);
     }
-  }, [selections, onSelectionChange]);
+    if (onPriceChange) {
+      const additionalPrice = getAdditionalPrice();
+      const totalPrice = getTotalPrice();
+      onPriceChange(additionalPrice, totalPrice);
+    }
+  }, [selections, onSelectionChange, onPriceChange, basePrice]);
 
   const handleSelectionChange = (optionName: string) => (event: SelectChangeEvent<string>) => {
     setSelections(prev => ({
@@ -77,11 +124,23 @@ export const OptionsSelector: React.FC<OptionsSelectorProps> = ({
               <MenuItem value="">
                 <em>Select {option.name}</em>
               </MenuItem>
-              {option.values.map((value) => (
-                <MenuItem key={value} value={value}>
-                  {value}
-                </MenuItem>
-              ))}
+              {option.values.map((value) => {
+                const displayName = getValueDisplayName(value);
+                const price = typeof value === 'object' ? value.price : undefined;
+                
+                return (
+                  <MenuItem key={displayName} value={displayName}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                      <span>{displayName}</span>
+                      {price && price > 0 && (
+                        <span style={{ color: '#1976d2', fontWeight: 'bold' }}>
+                          +CHF {price.toFixed(2)}
+                        </span>
+                      )}
+                    </Box>
+                  </MenuItem>
+                );
+              })}
             </Select>
           </FormControl>
         ))}
@@ -99,6 +158,24 @@ export const OptionsSelector: React.FC<OptionsSelectorProps> = ({
           <Typography variant="body2" gutterBottom>
             <strong>Selected:</strong> {getSelectedVariantName()}
           </Typography>
+          
+          {basePrice > 0 && (
+            <Box sx={{ mt: 1 }}>
+              <Typography variant="body2" color="text.secondary">
+                Base price: CHF {basePrice.toFixed(2)}
+              </Typography>
+              
+              {getAdditionalPrice() > 0 && (
+                <Typography variant="body2" color="primary">
+                  Options: +CHF {getAdditionalPrice().toFixed(2)}
+                </Typography>
+              )}
+              
+              <Typography variant="body1" sx={{ fontWeight: 'bold', mt: 0.5 }}>
+                Total: CHF {getTotalPrice().toFixed(2)}
+              </Typography>
+            </Box>
+          )}
         </Box>
       )}
     </Box>

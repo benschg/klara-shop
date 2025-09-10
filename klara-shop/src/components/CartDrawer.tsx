@@ -30,19 +30,17 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
 
   const handleQuantityChange = (item: CartItem, newQuantity: number) => {
     if (newQuantity > 0) {
-      updateQuantity(item.id, newQuantity, item.selectedOptions);
+      updateQuantity(item.id, newQuantity, item.selectedVariant);
     }
   };
 
   const handleRemoveItem = (item: CartItem) => {
-    removeItem(item.id, item.selectedOptions);
+    removeItem(item.id, item.selectedVariant);
   };
 
-  const formatSelectedOptions = (options?: Record<string, string>) => {
-    if (!options || Object.keys(options).length === 0) return '';
-    return Object.entries(options)
-      .map(([key, value]) => `${key}: ${value}`)
-      .join(', ');
+  const formatVariantOptions = (variant?: { options: string[] }) => {
+    if (!variant?.options || variant.options.length === 0) return '';
+    return variant.options.join(', ');
   };
 
   const drawerWidth = 400;
@@ -101,9 +99,9 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
                           #{item.articleNumber}
                         </Typography>
                         
-                        {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
+                        {item.selectedVariant && item.selectedVariant.options.length > 0 && (
                           <Chip 
-                            label={formatSelectedOptions(item.selectedOptions)}
+                            label={formatVariantOptions(item.selectedVariant)}
                             size="small"
                             variant="outlined"
                             sx={{ mb: 1 }}

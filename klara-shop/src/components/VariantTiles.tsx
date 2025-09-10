@@ -32,44 +32,28 @@ type Variant = {
 
 interface VariantTilesProps {
   articleId: string;
+  articleOptions?: Array<{
+    name: string;
+    values: string[];
+  }>;
   onVariantChange?: (imageIndex: number) => void;
+  onVariantPriceChange?: (variantPrice: number | null, selectedVariant: Variant | null) => void;
   totalImages?: number;
 }
 
 export const VariantTiles: React.FC<VariantTilesProps> = ({ 
   articleId, 
+  articleOptions,
   onVariantChange, 
+  onVariantPriceChange,
   totalImages = 0 
 }) => {
   const [variants, setVariants] = useState<Variant[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedSize, setSelectedSize] = useState<string>('');
-  const [selectedColor, setSelectedColor] = useState<string>('');
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    const loadVariants = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const fetchedVariants = await ApiService.getArticleVariants(articleId);
-        
-        
-        setVariants(fetchedVariants);
-      } catch (err) {
-        console.error('Error loading variants for article:', articleId, err);
-        // Only set error for client-side issues, not server 500 errors
-        if (err instanceof Error && !err.message.includes('500')) {
-          setError(err.message);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadVariants();
-  }, [articleId]);
-
+  // Helper function to get variant price (moved up for debug use)
   const getVariantPrice = (variant: Variant) => {
     if (!variant.pricePeriods || variant.pricePeriods.length === 0) {
       return null;
@@ -79,58 +63,166 @@ export const VariantTiles: React.FC<VariantTilesProps> = ({
     return variant.pricePeriods[0]?.price || null;
   };
 
-  // Extract unique sizes and colors from variants
-  const { sizes, colors } = useMemo(() => {
-    const sizeSet = new Set<string>();
-    const colorSet = new Set<string>();
+  useEffect(() => {
+    const loadVariants = async () => {
+      console.log(`=== STARTING VARIANT FETCH for Article ${articleId} ===`);
+      
+      try {
+        setLoading(true);
+        setError(null);
+        
+        console.log('Making API call to fetch variants...');
+        const fetchedVariants = await ApiService.getArticleVariants(articleId);
+        
+        console.log(`=== RAW API RESPONSE for Article ${articleId} ===`);
+        console.log('Fetched variants:', fetchedVariants);
+        console.log('Number of variants:', fetchedVariants?.length || 0);
+        
+        if (!fetchedVariants || fetchedVariants.length === 0) {
+          console.log('⚠️ No variants found for this article');
+          setVariants([]);
+          return;
+        }
+        
+        // Debug: Print variant pricing information  
+        console.log(`=== VARIANT PRICING DEBUG for Article ${articleId} ===`);
+        console.log('Article Options Structure:', articleOptions);
+        fetchedVariants.forEach((variant, index) => {
+          const price = getVariantPrice(variant);
+          console.log(`Variant ${index + 1}:`, {
+            id: variant.id,
+            number: variant.number,
+            name: variant.nameDE,
+            options: variant.variantOptionValues,
+            pricePeriods: variant.pricePeriods,
+            calculatedPrice: price,
+            priceFormatted: price ? `CHF ${price.toFixed(2)}` : 'No price'
+          });
+        });
+        console.log(`=== END VARIANT PRICING DEBUG ===`);
+        
+        setVariants(fetchedVariants);
+      } catch (err) {
+        console.error('=== VARIANT FETCH ERROR ===');
+        console.error('Error loading variants for article:', articleId);
+        console.error('Error details:', err);
+        
+        if (err instanceof Error) {
+          console.error('Error message:', err.message);
+          console.error('Error stack:', err.stack);
+        }
+        
+        // Only set error for client-side issues, not server 500 errors
+        if (err instanceof Error && !err.message.includes('500')) {
+          setError(err.message);
+        }
+        console.error('=== END VARIANT FETCH ERROR ===');
+      } finally {
+        setLoading(false);
+        console.log(`=== FINISHED VARIANT FETCH for Article ${articleId} ===`);
+      }
+    };
 
+    if (articleId) {
+      loadVariants();
+    } else {
+      console.warn('No articleId provided to VariantTiles component');
+    }
+  }, [articleId]);
+
+  // Get available options values based on article options structure and variants
+  const availableOptionValues = useMemo(() => {
+    if (!articleOptions || !variants.length) return {};
+    
+    const optionMap: Record<string, Set<string>> = {};
+    
+    // Initialize option sets
+    articleOptions.forEach(option => {
+      optionMap[option.name] = new Set<string>();
+    });
+    
+    // Collect actual values from variants
     variants.forEach(variant => {
-      if (variant.variantOptionValues && variant.variantOptionValues.length >= 2) {
-        sizeSet.add(variant.variantOptionValues[0]); // First value is size
-        colorSet.add(variant.variantOptionValues[1]); // Second value is color
+      if (variant.variantOptionValues && variant.variantOptionValues.length === articleOptions.length) {
+        articleOptions.forEach((option, index) => {
+          if (variant.variantOptionValues && variant.variantOptionValues[index]) {
+            optionMap[option.name].add(variant.variantOptionValues[index]);
+          }
+        });
       }
     });
+    
+    // Convert Sets to arrays, preserving original order from article options
+    const result: Record<string, string[]> = {};
+    articleOptions.forEach(option => {
+      if (optionMap[option.name]) {
+        // Keep the original order from article.options, filter to only include values that exist in variants
+        result[option.name] = option.values.filter(value => optionMap[option.name].has(value));
+      }
+    });
+    
+    console.log('=== AVAILABLE OPTION VALUES ===');
+    console.log('Result:', result);
+    console.log('=== END AVAILABLE OPTION VALUES ===');
+    
+    return result;
+  }, [articleOptions, variants]);
 
-    return {
-      sizes: Array.from(sizeSet).sort(),
-      colors: Array.from(colorSet).sort()
-    };
-  }, [variants]);
-
-  // Find the selected variant
+  // Find the selected variant based on selected options
   const selectedVariant = useMemo(() => {
-    if (!selectedSize || !selectedColor) return null;
+    if (!articleOptions || !variants.length) return null;
     
-    return variants.find(variant => 
-      variant.variantOptionValues &&
-      variant.variantOptionValues[0] === selectedSize &&
-      variant.variantOptionValues[1] === selectedColor
-    );
-  }, [variants, selectedSize, selectedColor]);
-
-  // Calculate which image to show based on variant selection
-  const getImageIndexForVariant = (size: string, color: string) => {
-    if (totalImages <= 1) return 0;
+    // Check if all options are selected
+    const allOptionsSelected = articleOptions.every(option => selectedOptions[option.name]);
+    if (!allOptionsSelected) return null;
     
-    // Create a simple mapping: different colors get different images
-    const colorIndex = colors.indexOf(color);
-    return colorIndex >= 0 && colorIndex < totalImages ? colorIndex : 0;
-  };
+    // Find matching variant
+    const matchingVariant = variants.find(variant => {
+      if (!variant.variantOptionValues || variant.variantOptionValues.length !== articleOptions.length) {
+        return false;
+      }
+      
+      return articleOptions.every((option, index) => {
+        return variant.variantOptionValues![index] === selectedOptions[option.name];
+      });
+    });
+    
+    console.log('=== VARIANT SELECTION MATCHING ===');
+    console.log('Selected options:', selectedOptions);
+    console.log('Found matching variant:', matchingVariant);
+    console.log('=== END VARIANT SELECTION MATCHING ===');
+    
+    return matchingVariant || null;
+  }, [articleOptions, variants, selectedOptions]);
 
-  // Update parent image when variant selection changes
+
+  // Update parent price when variant selection changes
   useEffect(() => {
-    if (selectedSize && selectedColor && onVariantChange && totalImages > 1) {
-      const imageIndex = getImageIndexForVariant(selectedSize, selectedColor);
-      onVariantChange(imageIndex);
+    if (selectedVariant) {
+      // Handle price change
+      if (onVariantPriceChange) {
+        const variantPrice = getVariantPrice(selectedVariant);
+        
+        console.log(`=== VARIANT SELECTION DEBUG ===`);
+        console.log('Selected variant:', selectedVariant);
+        console.log('Variant price:', variantPrice);
+        console.log(`=== END VARIANT SELECTION DEBUG ===`);
+        
+        onVariantPriceChange(variantPrice, selectedVariant);
+      }
+    } else {
+      // No variant selected, clear pricing
+      if (onVariantPriceChange) {
+        onVariantPriceChange(null, null);
+      }
     }
-  }, [selectedSize, selectedColor, onVariantChange, totalImages, colors]);
+  }, [selectedVariant, onVariantPriceChange]);
 
-  const handleSizeChange = (event: SelectChangeEvent<string>) => {
-    setSelectedSize(event.target.value);
-  };
-
-  const handleColorChange = (event: SelectChangeEvent<string>) => {
-    setSelectedColor(event.target.value);
+  const handleOptionChange = (optionName: string) => (event: SelectChangeEvent<string>) => {
+    setSelectedOptions(prev => ({
+      ...prev,
+      [optionName]: event.target.value
+    }));
   };
 
   if (loading) {
@@ -152,6 +244,15 @@ export const VariantTiles: React.FC<VariantTilesProps> = ({
     );
   }
 
+  // Show fallback if no article options are defined
+  if (!articleOptions || articleOptions.length === 0) {
+    return (
+      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+        No variant options defined
+      </Typography>
+    );
+  }
+
   if (variants.length === 0 && !loading) {
     return (
       <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
@@ -162,69 +263,30 @@ export const VariantTiles: React.FC<VariantTilesProps> = ({
 
   return (
     <Box sx={{ mt: 2 }}>
-      <Typography variant="subtitle2" gutterBottom>
-        Variants ({variants.length})
-      </Typography>
-      
-      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-        <FormControl size="small" sx={{ minWidth: 80 }}>
-          <InputLabel id="size-select-label">Size</InputLabel>
-          <Select
-            labelId="size-select-label"
-            id="size-select"
-            value={selectedSize}
-            label="Size"
-            onChange={handleSizeChange}
-          >
-            <MenuItem value="">
-              <em>Select Size</em>
-            </MenuItem>
-            {sizes.map((size) => (
-              <MenuItem key={size} value={size}>
-                {size}
+      {/* Dynamic option selectors based on article options */}
+      <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
+        {articleOptions.map((option) => (
+          <FormControl key={option.name} size="small" sx={{ minWidth: 120 }}>
+            <InputLabel id={`${option.name}-select-label`}>{option.name}</InputLabel>
+            <Select
+              labelId={`${option.name}-select-label`}
+              id={`${option.name}-select`}
+              value={selectedOptions[option.name] || ''}
+              label={option.name}
+              onChange={handleOptionChange(option.name)}
+            >
+              <MenuItem value="">
+                <em>Select {option.name}</em>
               </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <FormControl size="small" sx={{ minWidth: 80 }}>
-          <InputLabel id="color-select-label">Color</InputLabel>
-          <Select
-            labelId="color-select-label"
-            id="color-select"
-            value={selectedColor}
-            label="Color"
-            onChange={handleColorChange}
-          >
-            <MenuItem value="">
-              <em>Select Color</em>
-            </MenuItem>
-            {colors.map((color) => (
-              <MenuItem key={color} value={color}>
-                {color}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+              {(availableOptionValues[option.name] || []).map((value) => (
+                <MenuItem key={value} value={value}>
+                  {value}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        ))}
       </Box>
-
-      {selectedVariant && (
-        <Box sx={{ p: 2, border: 1, borderColor: 'primary.main', borderRadius: 1, bgcolor: 'primary.50' }}>
-          <Typography variant="body2" gutterBottom>
-            <strong>Selected Variant:</strong> {selectedSize} / {selectedColor}
-          </Typography>
-          {selectedVariant.number && (
-            <Typography variant="body2" color="text.secondary">
-              Article Number: {selectedVariant.number}
-            </Typography>
-          )}
-          {getVariantPrice(selectedVariant) && (
-            <Typography variant="h6" color="primary" sx={{ mt: 1 }}>
-              CHF {getVariantPrice(selectedVariant)!.toFixed(2)}
-            </Typography>
-          )}
-        </Box>
-      )}
     </Box>
   );
 };
