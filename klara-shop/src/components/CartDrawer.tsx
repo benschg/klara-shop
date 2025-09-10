@@ -15,8 +15,8 @@ import {
   Chip,
 } from '@mui/material';
 import { Delete, Add, Remove, Close } from '@mui/icons-material';
-import { useCart } from '../contexts/CartContext';
-import type { CartItem } from '../contexts/CartContext';
+import { useCartStore } from '../stores/cartStore';
+import type { CartItem } from '../stores/cartStore';
 
 interface CartDrawerProps {
   open: boolean;
@@ -24,7 +24,7 @@ interface CartDrawerProps {
 }
 
 export const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
-  const { state, updateQuantity, removeItem } = useCart();
+  const { items, totalItems, totalPrice, updateQuantity, removeItem } = useCartStore();
 
   const handleQuantityChange = (item: CartItem, newQuantity: number) => {
     if (newQuantity > 0) {
@@ -57,14 +57,14 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
       <Box sx={{ p: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="h6">
-            Warenkorb ({state.totalItems})
+            Warenkorb ({totalItems})
           </Typography>
           <IconButton onClick={onClose}>
             <Close />
           </IconButton>
         </Box>
 
-        {state.items.length === 0 ? (
+        {items.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 4 }}>
             <Typography variant="body1" color="text.secondary">
               Dein Warenkorb ist leer
@@ -76,7 +76,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
         ) : (
           <>
             <List>
-              {state.items.map((item, index) => (
+              {items.map((item, index) => (
                 <React.Fragment key={`${item.id}-${index}`}>
                   <ListItem alignItems="flex-start" sx={{ px: 0 }}>
                     <Box sx={{ display: 'flex', width: '100%', gap: 2 }}>
@@ -155,7 +155,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
                       </Box>
                     </Box>
                   </ListItem>
-                  {index < state.items.length - 1 && <Divider />}
+                  {index < items.length - 1 && <Divider />}
                 </React.Fragment>
               ))}
             </List>
@@ -168,7 +168,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
                   Total
                 </Typography>
                 <Typography variant="h6" color="primary">
-                  CHF {state.totalPrice.toFixed(2)}
+                  CHF {totalPrice.toFixed(2)}
                 </Typography>
               </Box>
 
@@ -178,7 +178,6 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
                 size="large"
                 sx={{ mb: 1 }}
                 onClick={() => {
-                  // TODO: Implement checkout
                   alert('Checkout functionality would be implemented here');
                 }}
               >

@@ -13,9 +13,9 @@ import {
 import { ArrowBackIos, ArrowForwardIos, CheckCircle, ShoppingCart } from '@mui/icons-material';
 import { VariantTiles } from './VariantTiles';
 import { OptionsSelector } from './OptionsSelector';
-import { useCart } from '../contexts/CartContext';
+import { useCartStore } from '../stores/cartStore';
 import { useToast } from '../contexts/ToastContext';
-// Temporary inline type definition to fix import issue
+// Article type definition
 type Article = {
   id?: string;
   nameDE: string;
@@ -58,7 +58,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const { addItem } = useCart();
+  const addItem = useCartStore(state => state.addItem);
   const { showCartSuccessToast } = useToast();
   
   const handleVariantImageChange = (imageIndex: number) => {

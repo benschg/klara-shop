@@ -8,7 +8,7 @@ import {
   Box,
 } from '@mui/material';
 import { ShoppingCart } from '@mui/icons-material';
-import { useCart } from '../contexts/CartContext';
+import { useCartStore } from '../stores/cartStore';
 import { useBranding } from '../contexts/BrandingContext';
 
 interface HeaderProps {
@@ -16,7 +16,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
-  const { state } = useCart();
+  const { totalItems, totalPrice } = useCartStore();
   const { branding } = useBranding();
 
   const renderIcon = (icon: string, iconType?: string, iconSize?: string) => {
@@ -67,15 +67,15 @@ export const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography variant="body2" sx={{ display: { xs: 'none', sm: 'block' } }}>
-            CHF {state.totalPrice.toFixed(2)}
+            CHF {totalPrice.toFixed(2)}
           </Typography>
           
           <IconButton
             color="inherit"
             onClick={onCartClick}
-            aria-label={`shopping cart with ${state.totalItems} items`}
+            aria-label={`shopping cart with ${totalItems} items`}
           >
-            <Badge badgeContent={state.totalItems} color="secondary" max={99}>
+            <Badge badgeContent={totalItems} color="secondary" max={99}>
               <ShoppingCart />
             </Badge>
           </IconButton>

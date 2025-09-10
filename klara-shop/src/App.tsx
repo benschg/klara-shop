@@ -4,7 +4,6 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { ArticleGrid } from './components/ArticleGrid';
 import { Header } from './components/Header';
 import { CartDrawer } from './components/CartDrawer';
-import { CartProvider } from './contexts/CartContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { BrandingProvider } from './contexts/BrandingContext';
 import { useBrandedTheme } from './hooks/useBrandedTheme';
@@ -38,11 +37,9 @@ const ThemedApp: React.FC = () => {
 function App() {
   return (
     <BrandingProvider>
-      <CartProvider>
-        <ToastProvider>
-          <ThemedApp />
-        </ToastProvider>
-      </CartProvider>
+      <ToastProvider>
+        <ThemedApp />
+      </ToastProvider>
     </BrandingProvider>
   );
 }
