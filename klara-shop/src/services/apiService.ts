@@ -118,13 +118,8 @@ export class ApiService {
       // Note: category filtering is done client-side since API doesn't support it
 
       const url = `/core/latest/articles${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
-      console.log('Making API request to:', API_BASE_URL + url);
-      console.log('Request headers:', apiClient.defaults.headers);
       
       const response = await apiClient.get(url);
-      
-      console.log('API Response status:', response.status);
-      console.log('API Response data:', response.data);
       
       return response.data;
     } catch (error) {
@@ -156,12 +151,8 @@ export class ApiService {
       queryParams.set('active-status', 'true'); // Only get active categories
       
       const url = `/core/latest/article-categories?${queryParams.toString()}`;
-      console.log('Fetching categories from:', API_BASE_URL + url);
       
       const response = await apiClient.get(url);
-      
-      console.log('Categories Response status:', response.status);
-      console.log('Categories Response data:', response.data);
       
       return response.data;
     } catch (error) {
@@ -177,12 +168,8 @@ export class ApiService {
   static async getArticleVariants(articleId: string): Promise<Variant[]> {
     try {
       const url = `/core/latest/articles/${articleId}/variants`;
-      console.log('Fetching variants from:', API_BASE_URL + url);
       
       const response = await apiClient.get(url);
-      
-      console.log('Variants Response status:', response.status);
-      console.log('Variants Response data:', response.data);
       
       return response.data;
     } catch (error) {
@@ -207,13 +194,8 @@ export class ApiService {
       }
 
       const url = `/core/latest/articles/article-and-variants${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
-      console.log('Making API request to:', API_BASE_URL + url);
-      console.log('Request headers:', apiClient.defaults.headers);
       
       const response = await apiClient.get(url);
-      
-      console.log('Articles and Variants API Response status:', response.status);
-      console.log('Articles and Variants API Response data:', response.data);
       
       return response.data;
     } catch (error) {

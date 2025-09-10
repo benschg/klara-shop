@@ -54,15 +54,9 @@ export const VariantTiles: React.FC<VariantTilesProps> = ({
         setError(null);
         const fetchedVariants = await ApiService.getArticleVariants(articleId);
         
-        // Debug: Log variant option values structure
-        console.log(`Loaded ${fetchedVariants.length} variants for article ${articleId}`);
-        if (fetchedVariants.length > 0) {
-          console.log('Sample variant options:', fetchedVariants[0]?.variantOptionValues);
-        }
         
         setVariants(fetchedVariants);
       } catch (err) {
-        // Log the error but don't show it to the user for API issues
         console.error('Error loading variants for article:', articleId, err);
         // Only set error for client-side issues, not server 500 errors
         if (err instanceof Error && !err.message.includes('500')) {

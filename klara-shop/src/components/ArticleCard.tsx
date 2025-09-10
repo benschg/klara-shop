@@ -266,19 +266,11 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
         </Typography>
 
         <Box sx={{ mt: 2, mb: 1 }}>
-          <Typography variant="body2" color="text.secondary">
-            Article #: {article.articleNumber}
-          </Typography>
-          
           {article.barcode && (
             <Typography variant="body2" color="text.secondary">
               Barcode: {article.barcode}
             </Typography>
           )}
-          
-          <Typography variant="body2" color="text.secondary">
-            Unit: {getDisplayUnit()}
-          </Typography>
         </Box>
 
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
@@ -286,9 +278,6 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
             <Chip label={article.productType.name} size="small" variant="outlined" />
           )}
           
-          {(article.hasVariant || (article.options && article.options.length > 0)) && (
-            <Chip label="Has Variants" size="small" color="info" />
-          )}
           
           {article.isArticleSet && (
             <Chip label="Article Set" size="small" color="secondary" />

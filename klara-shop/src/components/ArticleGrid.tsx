@@ -40,8 +40,6 @@ type ArticleCategory = {
   nameIT?: string;
   order?: number;
 };
-import { DebugInfo } from "./DebugInfo";
-import { TestComponent } from "./TestComponent";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -72,7 +70,6 @@ export const ArticleGrid: React.FC = () => {
       // Use regular articles endpoint (has images)
       const fetchedArticles = await ApiService.getArticles(fetchParams);
 
-      console.log(`Loaded ${fetchedArticles.length} articles`);
 
       setAllArticles(fetchedArticles);
     } catch (err) {
@@ -216,7 +213,7 @@ export const ArticleGrid: React.FC = () => {
   };
 
   const handleImageError = (imageUrl: string) => {
-    console.warn(`Failed to load image: ${imageUrl}`);
+    // Image failed to load
   };
 
   if (loading && displayedArticles.length === 0) {
@@ -301,11 +298,7 @@ export const ArticleGrid: React.FC = () => {
       <Grid container spacing={3}>
         {displayedArticles.map((article) => (
           <Grid
-            item
-            xs={12}
-            sm={6}
-            md={4}
-            lg={3}
+            size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
             key={article.id || article.articleNumber}
           >
             <ArticleCard article={article} onImageError={handleImageError} />
