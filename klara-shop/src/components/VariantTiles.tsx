@@ -65,68 +65,33 @@ export const VariantTiles: React.FC<VariantTilesProps> = ({
 
   useEffect(() => {
     const loadVariants = async () => {
-      console.log(`=== STARTING VARIANT FETCH for Article ${articleId} ===`);
       
       try {
         setLoading(true);
         setError(null);
         
-        console.log('Making API call to fetch variants...');
         const fetchedVariants = await ApiService.getArticleVariants(articleId);
         
-        console.log(`=== RAW API RESPONSE for Article ${articleId} ===`);
-        console.log('Fetched variants:', fetchedVariants);
-        console.log('Number of variants:', fetchedVariants?.length || 0);
         
         if (!fetchedVariants || fetchedVariants.length === 0) {
-          console.log('⚠️ No variants found for this article');
           setVariants([]);
           return;
         }
         
-        // Debug: Print variant pricing information  
-        console.log(`=== VARIANT PRICING DEBUG for Article ${articleId} ===`);
-        console.log('Article Options Structure:', articleOptions);
-        fetchedVariants.forEach((variant, index) => {
-          const price = getVariantPrice(variant);
-          console.log(`Variant ${index + 1}:`, {
-            id: variant.id,
-            number: variant.number,
-            name: variant.nameDE,
-            options: variant.variantOptionValues,
-            pricePeriods: variant.pricePeriods,
-            calculatedPrice: price,
-            priceFormatted: price ? `CHF ${price.toFixed(2)}` : 'No price'
-          });
-        });
-        console.log(`=== END VARIANT PRICING DEBUG ===`);
         
         setVariants(fetchedVariants);
       } catch (err) {
-        console.error('=== VARIANT FETCH ERROR ===');
-        console.error('Error loading variants for article:', articleId);
-        console.error('Error details:', err);
-        
-        if (err instanceof Error) {
-          console.error('Error message:', err.message);
-          console.error('Error stack:', err.stack);
-        }
-        
-        // Only set error for client-side issues, not server 500 errors
         if (err instanceof Error && !err.message.includes('500')) {
           setError(err.message);
         }
-        console.error('=== END VARIANT FETCH ERROR ===');
       } finally {
         setLoading(false);
-        console.log(`=== FINISHED VARIANT FETCH for Article ${articleId} ===`);
       }
     };
 
     if (articleId) {
       loadVariants();
     } else {
-      console.warn('No articleId provided to VariantTiles component');
     }
   }, [articleId]);
 
@@ -161,9 +126,6 @@ export const VariantTiles: React.FC<VariantTilesProps> = ({
       }
     });
     
-    console.log('=== AVAILABLE OPTION VALUES ===');
-    console.log('Result:', result);
-    console.log('=== END AVAILABLE OPTION VALUES ===');
     
     return result;
   }, [articleOptions, variants]);
@@ -187,10 +149,6 @@ export const VariantTiles: React.FC<VariantTilesProps> = ({
       });
     });
     
-    console.log('=== VARIANT SELECTION MATCHING ===');
-    console.log('Selected options:', selectedOptions);
-    console.log('Found matching variant:', matchingVariant);
-    console.log('=== END VARIANT SELECTION MATCHING ===');
     
     return matchingVariant || null;
   }, [articleOptions, variants, selectedOptions]);
@@ -203,10 +161,6 @@ export const VariantTiles: React.FC<VariantTilesProps> = ({
       if (onVariantPriceChange) {
         const variantPrice = getVariantPrice(selectedVariant);
         
-        console.log(`=== VARIANT SELECTION DEBUG ===`);
-        console.log('Selected variant:', selectedVariant);
-        console.log('Variant price:', variantPrice);
-        console.log(`=== END VARIANT SELECTION DEBUG ===`);
         
         onVariantPriceChange(variantPrice, selectedVariant);
       }
