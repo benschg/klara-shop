@@ -26,6 +26,10 @@ type Article = {
     name?: string;
   };
   accountingTags: string[];
+  options?: Array<{
+    name: string;
+    values: string[];
+  }>;
 };
 
 type ProductType = {

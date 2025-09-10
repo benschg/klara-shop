@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import { ArrowBackIos, ArrowForwardIos } from '@mui/icons-material';
 import { VariantTiles } from './VariantTiles';
+import { OptionsSelector } from './OptionsSelector';
 // Temporary inline type definition to fix import issue
 type Article = {
   id?: string;
@@ -36,6 +37,10 @@ type Article = {
     name?: string;
   };
   accountingTags: string[];
+  options?: Array<{
+    name: string;
+    values: string[];
+  }>;
 };
 
 interface ArticleCardProps {
@@ -53,6 +58,10 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
     if (imageIndex >= 0 && imageIndex < images.length) {
       setCurrentImageIndex(imageIndex);
     }
+  };
+
+  const handleOptionsSelectionChange = (selections: Record<string, string>) => {
+    // Options selection no longer changes images
   };
   const getDisplayName = () => {
     return article.nameEN || article.nameDE || 'Unnamed Article';
@@ -225,7 +234,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
             <Chip label={article.productType.name} size="small" variant="outlined" />
           )}
           
-          {article.hasVariant && (
+          {(article.hasVariant || (article.options && article.options.length > 0)) && (
             <Chip label="Has Variants" size="small" color="info" />
           )}
           
@@ -234,8 +243,16 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
           )}
         </Box>
 
-        {/* Show variants if article has variants */}
-        {article.hasVariant && article.id && (
+        {/* Show options selector if article has options */}
+        {article.options && article.options.length > 0 && (
+          <OptionsSelector
+            options={article.options}
+            onSelectionChange={handleOptionsSelectionChange}
+          />
+        )}
+        
+        {/* Show variant tiles for articles with hasVariant but no options */}
+        {article.hasVariant && article.id && (!article.options || article.options.length === 0) && (
           <VariantTiles 
             articleId={article.id} 
             onVariantChange={handleVariantImageChange}

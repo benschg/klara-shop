@@ -69,26 +69,10 @@ export const ArticleGrid: React.FC = () => {
         offset: 0,
       };
       
-      // Use articles-and-variants to check category data
-      const fetchedArticles = await ApiService.getArticlesAndVariants(fetchParams);
+      // Use regular articles endpoint (has images)
+      const fetchedArticles = await ApiService.getArticles(fetchParams);
       
-      // Debug: Check category data from articles-and-variants
-      console.log('Sample articles-and-variants category data:');
-      fetchedArticles.slice(0, 5).forEach((item, index) => {
-        console.log(`Item ${index}:`, {
-          name: (item as any).name,
-          articleNumber: (item as any).articleNumber,
-          accountingTags: item.accountingTags,
-          optionValues: (item as any).optionValues,
-          productType: (item as any).productType,
-          hasImages: !!(item as any).imageHrefs && (item as any).imageHrefs.length > 0,
-        });
-      });
-      
-      // Summary stats
-      const itemsWithImages = fetchedArticles.filter(item => (item as any).imageHrefs && (item as any).imageHrefs.length > 0);
-      const itemsWithOptions = fetchedArticles.filter(item => (item as any).optionValues && (item as any).optionValues.length > 0);
-      console.log(`Loaded ${fetchedArticles.length} items: ${itemsWithOptions.length} have variants, ${itemsWithImages.length} have images`);
+      console.log(`Loaded ${fetchedArticles.length} articles`);
       
       setAllArticles(fetchedArticles);
       
