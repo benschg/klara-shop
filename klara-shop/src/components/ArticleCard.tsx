@@ -8,10 +8,13 @@ import {
   Box,
   Button,
   IconButton,
+  CircularProgress,
 } from '@mui/material';
-import { ArrowBackIos, ArrowForwardIos } from '@mui/icons-material';
+import { ArrowBackIos, ArrowForwardIos, CheckCircle, ShoppingCart } from '@mui/icons-material';
 import { VariantTiles } from './VariantTiles';
 import { OptionsSelector } from './OptionsSelector';
+import { useCart } from '../contexts/CartContext';
+import { useToast } from '../contexts/ToastContext';
 // Temporary inline type definition to fix import issue
 type Article = {
   id?: string;
@@ -53,6 +56,10 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
   onImageError 
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const { addItem } = useCart();
+  const { showCartSuccessToast } = useToast();
   
   const handleVariantImageChange = (imageIndex: number) => {
     if (imageIndex >= 0 && imageIndex < images.length) {
@@ -61,7 +68,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
   };
 
   const handleOptionsSelectionChange = (selections: Record<string, string>) => {
-    // Options selection no longer changes images
+    setSelectedOptions(selections);
   };
   const getDisplayName = () => {
     return article.nameEN || article.nameDE || 'Unnamed Article';
@@ -97,6 +104,51 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
   };
 
   const price = getCurrentPrice();
+
+  // Check if options are required and all are selected
+  const hasOptions = article.options && article.options.length > 0;
+  const allOptionsSelected = hasOptions ? 
+    article.options!.every(option => selectedOptions[option.name]) : true;
+
+  const handleAddToCart = async () => {
+    if (!article.id || !price || isAddingToCart) return;
+    
+    // Check if all required options are selected
+    if (hasOptions && !allOptionsSelected) {
+      alert('Bitte wähle alle Optionen aus bevor du das Produkt in den Warenkorb legst.');
+      return;
+    }
+
+    setIsAddingToCart(true);
+
+    const cartItem = {
+      id: article.id,
+      articleNumber: article.articleNumber,
+      name: getDisplayName(),
+      price: price,
+      imageUrl: images.length > 0 ? getProxiedImageUrl(images[currentImageIndex]) : undefined,
+      selectedOptions: hasOptions ? selectedOptions : undefined,
+    };
+
+    // Add to cart
+    addItem(cartItem);
+    
+    // Show success toast with product info
+    const selectedOptionsText = hasOptions && Object.keys(selectedOptions).length > 0 
+      ? ` (${Object.entries(selectedOptions).map(([key, value]) => `${value}`).join(', ')})`
+      : '';
+    
+    showCartSuccessToast(
+      `In den Warenkorb gelegt!`,
+      `${getDisplayName()}${selectedOptionsText}`,
+      cartItem.imageUrl
+    );
+
+    // Reset button state after animation
+    setTimeout(() => {
+      setIsAddingToCart(false);
+    }, 1000);
+  };
   
   // Convert image URL to use proxy if in development
   const getProxiedImageUrl = (url: string) => {
@@ -267,8 +319,37 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
             </Typography>
           )}
           
-          <Button variant="outlined" size="small">
-            View Details
+          <Button 
+            variant="contained" 
+            size="small"
+            onClick={handleAddToCart}
+            disabled={!price || (hasOptions && !allOptionsSelected) || isAddingToCart}
+            startIcon={
+              isAddingToCart ? (
+                <CircularProgress size={16} color="inherit" />
+              ) : hasOptions && !allOptionsSelected ? null : (
+                <ShoppingCart fontSize="small" />
+              )
+            }
+            sx={{
+              transition: 'all 0.3s ease',
+              '&.Mui-disabled': {
+                opacity: isAddingToCart ? 0.8 : 0.5,
+              },
+              ...(isAddingToCart && {
+                backgroundColor: 'success.main',
+                '&:hover': {
+                  backgroundColor: 'success.dark',
+                },
+              }),
+            }}
+          >
+            {isAddingToCart 
+              ? 'Hinzugefügt!' 
+              : hasOptions && !allOptionsSelected 
+                ? 'Optionen wählen' 
+                : 'In den Warenkorb'
+            }
           </Button>
         </Box>
       </CardContent>
