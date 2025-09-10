@@ -39,7 +39,6 @@ export const CheckoutPage: React.FC = () => {
     deliveryNotes,
     errors,
     isSubmitting,
-    setCurrentStep,
     nextStep,
     previousStep,
     setCustomerInfo,
