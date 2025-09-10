@@ -1,38 +1,32 @@
 import React from 'react';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
+  Container,
   Box,
   Typography,
-  TextField,
-  FormControlLabel,
-  Checkbox,
-  Divider,
-  IconButton,
+  Button,
   Paper,
   List,
   ListItem,
   ListItemText,
   ListItemAvatar,
   Avatar,
+  Divider,
+  TextField,
+  FormControlLabel,
+  Checkbox,
+  IconButton,
 } from '@mui/material';
-import { Close, ShoppingCart } from '@mui/icons-material';
-import { CheckoutStepper } from './CheckoutStepper';
-import { CustomerInfoForm } from './CustomerInfoForm';
-import { AddressFormWithAutocomplete } from './AddressFormWithAutocomplete';
+import { ArrowBack, ShoppingCart } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import { CheckoutStepper } from '../components/CheckoutStepper';
+import { CustomerInfoForm } from '../components/CustomerInfoForm';
+import { AddressFormWithAutocomplete } from '../components/AddressFormWithAutocomplete';
 import { useCheckoutStore } from '../stores/checkoutStore';
 import { useCartStore } from '../stores/cartStore';
 import { useBranding } from '../contexts/BrandingContext';
 
-interface CheckoutDialogProps {
-  open: boolean;
-  onClose: () => void;
-}
-
-export const CheckoutDialog: React.FC<CheckoutDialogProps> = ({ open, onClose }) => {
+export const CheckoutPage: React.FC = () => {
+  const navigate = useNavigate();
   const { branding } = useBranding();
   const { items, totalPrice, clearCart } = useCartStore();
   const {
@@ -68,9 +62,8 @@ export const CheckoutDialog: React.FC<CheckoutDialogProps> = ({ open, onClose })
     previousStep();
   };
 
-  const handleClose = () => {
-    resetCheckout();
-    onClose();
+  const handleBackToShop = () => {
+    navigate('/');
   };
 
   const handlePlaceOrder = async () => {
@@ -93,10 +86,9 @@ export const CheckoutDialog: React.FC<CheckoutDialogProps> = ({ open, onClose })
       // Clear cart and reset checkout
       clearCart();
       resetCheckout();
-      onClose();
       
-      // Show success message (you might want to show a success dialog instead)
-      alert('Bestellung erfolgreich aufgegeben! Sie erhalten eine Bestätigung per E-Mail.');
+      // Navigate back to shop with success message
+      navigate('/', { state: { orderSuccess: true } });
       
     } catch (error) {
       console.error('Order submission failed:', error);
@@ -191,7 +183,7 @@ export const CheckoutDialog: React.FC<CheckoutDialogProps> = ({ open, onClose })
               
               <List dense>
                 {items.map((item) => (
-                  <ListItem key={`${item.id}-${JSON.stringify(item.selectedOptions)}`} sx={{ px: 0 }}>
+                  <ListItem key={`${item.id}-${JSON.stringify(item.selectedVariant)}`} sx={{ px: 0 }}>
                     <ListItemAvatar>
                       <Avatar
                         src={item.imageUrl}
@@ -208,11 +200,9 @@ export const CheckoutDialog: React.FC<CheckoutDialogProps> = ({ open, onClose })
                           <Typography variant="body2" color="text.secondary">
                             Menge: {item.quantity} × CHF {item.price.toFixed(2)}
                           </Typography>
-                          {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
+                          {item.selectedVariant && item.selectedVariant.options.length > 0 && (
                             <Typography variant="caption" color="text.secondary">
-                              {Object.entries(item.selectedOptions)
-                                .map(([key, value]) => `${key}: ${value}`)
-                                .join(', ')}
+                              {item.selectedVariant.options.join(', ')}
                             </Typography>
                           )}
                         </Box>
@@ -248,7 +238,7 @@ export const CheckoutDialog: React.FC<CheckoutDialogProps> = ({ open, onClose })
             {/* Address Summary */}
             <Paper sx={{ p: 2, mb: 2 }}>
               <Typography variant="subtitle1" gutterBottom>
-                Versandadresse
+                {useSameAddressForBilling ? 'Versandadresse & Rechnungsadresse' : 'Versandadresse'}
               </Typography>
               <Typography variant="body2">
                 {shippingAddress.firstName} {shippingAddress.lastName}<br />
@@ -293,17 +283,31 @@ export const CheckoutDialog: React.FC<CheckoutDialogProps> = ({ open, onClose })
     }
   };
 
+  // Redirect to home if cart is empty
+  if (items.length === 0) {
+    return (
+      <Container maxWidth="sm" sx={{ py: 4, textAlign: 'center' }}>
+        <Typography variant="h5" gutterBottom>
+          Ihr Warenkorb ist leer
+        </Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          Fügen Sie Artikel zu Ihrem Warenkorb hinzu, um mit der Bestellung fortzufahren.
+        </Typography>
+        <Button variant="contained" onClick={handleBackToShop}>
+          Zurück zum Shop
+        </Button>
+      </Container>
+    );
+  }
+
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      maxWidth="md"
-      fullWidth
-      PaperProps={{
-        sx: { minHeight: '80vh' }
-      }}
-    >
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
+    <Container maxWidth="md" sx={{ py: 3 }}>
+      {/* Header */}
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+        <IconButton onClick={handleBackToShop} sx={{ mr: 2 }}>
+          <ArrowBack />
+        </IconButton>
+        
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           {branding?.logo?.showIcon && (
             <img 
@@ -312,21 +316,22 @@ export const CheckoutDialog: React.FC<CheckoutDialogProps> = ({ open, onClose })
               style={{ height: '24px', width: 'auto' }} 
             />
           )}
-          <Typography variant="h6">
+          <Typography variant="h4">
             Kasse
           </Typography>
         </Box>
-        <IconButton onClick={handleClose} size="small">
-          <Close />
-        </IconButton>
-      </DialogTitle>
+      </Box>
 
-      <DialogContent sx={{ pt: 2 }}>
-        <CheckoutStepper steps={steps} currentStep={currentStep} />
+      {/* Stepper */}
+      <CheckoutStepper steps={steps} currentStep={currentStep} />
+
+      {/* Main Content */}
+      <Paper sx={{ p: 3, mb: 3 }}>
         {renderCurrentStep()}
-      </DialogContent>
+      </Paper>
 
-      <DialogActions sx={{ p: 3, justifyContent: 'space-between' }}>
+      {/* Navigation */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Button
           onClick={handleBack}
           disabled={currentStep === 'customer-info' || isSubmitting}
@@ -357,7 +362,7 @@ export const CheckoutDialog: React.FC<CheckoutDialogProps> = ({ open, onClose })
             </Button>
           )}
         </Box>
-      </DialogActions>
-    </Dialog>
+      </Box>
+    </Container>
   );
 };

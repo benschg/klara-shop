@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Drawer,
   Box,
@@ -15,8 +15,8 @@ import {
   Chip,
 } from '@mui/material';
 import { Delete, Add, Remove, Close } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '../stores/cartStore';
-import { CheckoutDialog } from './CheckoutDialog';
 import type { CartItem } from '../stores/cartStore';
 
 interface CartDrawerProps {
@@ -26,7 +26,7 @@ interface CartDrawerProps {
 
 export const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
   const { items, totalItems, totalPrice, updateQuantity, removeItem } = useCartStore();
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleQuantityChange = (item: CartItem, newQuantity: number) => {
     if (newQuantity > 0) {
@@ -178,7 +178,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
                 fullWidth
                 size="large"
                 sx={{ mb: 1 }}
-                onClick={() => setCheckoutOpen(true)}
+                onClick={() => navigate('/checkout')}
                 disabled={items.length === 0}
               >
                 Zur Kasse
@@ -196,14 +196,6 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
         )}
       </Box>
       </Drawer>
-
-      <CheckoutDialog
-        open={checkoutOpen}
-        onClose={() => {
-          setCheckoutOpen(false);
-          onClose(); // Also close the cart drawer
-        }}
-      />
     </>
   );
 };
