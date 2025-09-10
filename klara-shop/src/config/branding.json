@@ -1,0 +1,103 @@
+{
+  "brandName": "avec plaisir",
+  "typography": {
+    "primaryFont": {
+      "family": "Inter, system-ui, Avenir, Helvetica, Arial, sans-serif",
+      "fallbacks": ["system-ui", "Avenir", "Helvetica", "Arial", "sans-serif"]
+    },
+    "headingFont": {
+      "family": "Inter, system-ui, Avenir, Helvetica, Arial, sans-serif",
+      "fallbacks": ["system-ui", "Avenir", "Helvetica", "Arial", "sans-serif"]
+    },
+    "brandFont": {
+      "family": "Inter, system-ui, Avenir, Helvetica, Arial, sans-serif",
+      "weight": "400",
+      "style": "normal",
+      "transform": "lowercase"
+    }
+  },
+  "colors": {
+    "primary": {
+      "main": "#f28c86",
+      "light": "#f5a8a3",
+      "dark": "#e85d56",
+      "contrastText": "#ffffff"
+    },
+    "secondary": {
+      "main": "#5e747a",
+      "light": "#8a9ea5",
+      "dark": "#3e5156",
+      "contrastText": "#ffffff"
+    },
+    "accent": {
+      "main": "#9eabaf",
+      "light": "#c4d0d4",
+      "dark": "#7a878c",
+      "contrastText": "#ffffff"
+    },
+    "background": {
+      "default": "#ffffff",
+      "paper": "#fefefe",
+      "alt": "#f8f9fa"
+    },
+    "text": {
+      "primary": "#2c2c2c",
+      "secondary": "#5e747a",
+      "disabled": "#9eabaf"
+    }
+  },
+  "logo": {
+    "type": "text",
+    "text": "avec plaisir",
+    "icon": "/flower-salmon-256.png",
+    "iconType": "image",
+    "showIcon": true,
+    "iconPosition": "left",
+    "iconSize": "32px",
+    "style": {
+      "fontSize": "1.5rem",
+      "fontWeight": "400",
+      "textTransform": "lowercase",
+      "letterSpacing": "0.5px"
+    }
+  },
+  "theme": {
+    "borderRadius": "8px",
+    "elevation": {
+      "low": "0 2px 4px rgba(94, 116, 122, 0.1)",
+      "medium": "0 4px 8px rgba(94, 116, 122, 0.15)",
+      "high": "0 8px 16px rgba(94, 116, 122, 0.2)"
+    },
+    "spacing": {
+      "xs": "4px",
+      "sm": "8px",
+      "md": "16px",
+      "lg": "24px",
+      "xl": "32px"
+    }
+  },
+  "header": {
+    "backgroundColor": "#ffffff",
+    "textColor": "#2c2c2c",
+    "elevation": "low",
+    "height": "64px"
+  },
+  "cards": {
+    "backgroundColor": "#ffffff",
+    "borderRadius": "12px",
+    "elevation": "low",
+    "padding": "16px"
+  },
+  "buttons": {
+    "primary": {
+      "backgroundColor": "#f28c86",
+      "color": "#ffffff",
+      "hoverBackgroundColor": "#e85d56"
+    },
+    "secondary": {
+      "backgroundColor": "#5e747a",
+      "color": "#ffffff",
+      "hoverBackgroundColor": "#3e5156"
+    }
+  }
+}

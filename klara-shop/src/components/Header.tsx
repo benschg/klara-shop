@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 import { ShoppingCart } from '@mui/icons-material';
 import { useCart } from '../contexts/CartContext';
+import { useBranding } from '../contexts/BrandingContext';
 
 interface HeaderProps {
   onCartClick: () => void;
@@ -16,12 +17,52 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
   const { state } = useCart();
+  const { branding } = useBranding();
+
+  const renderIcon = (icon: string, iconType?: string, iconSize?: string) => {
+    if (iconType === 'image') {
+      return (
+        <img 
+          src={icon} 
+          alt="Logo" 
+          style={{ 
+            height: iconSize || '24px',
+            width: 'auto',
+            objectFit: 'contain'
+          }} 
+        />
+      );
+    }
+    return <span style={{ fontSize: '1.2em' }}>{icon}</span>;
+  };
+
+  const renderLogo = () => {
+    if (!branding) return 'avec plaisir';
+    
+    const { logo } = branding;
+    const logoStyle = {
+      ...logo.style,
+      textTransform: logo.style.textTransform as any,
+    };
+    
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        {logo.showIcon && logo.iconPosition === 'left' && 
+          renderIcon(logo.icon, logo.iconType, logo.iconSize)
+        }
+        <span style={logoStyle}>{logo.text}</span>
+        {logo.showIcon && logo.iconPosition === 'right' && 
+          renderIcon(logo.icon, logo.iconType, logo.iconSize)
+        }
+      </Box>
+    );
+  };
 
   return (
     <AppBar position="static" sx={{ mb: 4 }}>
       <Toolbar>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          avec plaisir
+          {renderLogo()}
         </Typography>
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
