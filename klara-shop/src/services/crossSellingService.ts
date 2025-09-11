@@ -29,27 +29,11 @@ export class CrossSellingService {
     return suggestions;
   }
   
-  private static getSuggestionsForArticles(articleNames: string[]): CrossSellingSuggestion[] {
+  private static getSuggestionsForArticles(_articleNames: string[]): CrossSellingSuggestion[] {
     const suggestions: CrossSellingSuggestion[] = [];
     
-    // Check if articles section exists in the data
-    if (!productCustomizationData.crossSelling.articles) {
-      return suggestions;
-    }
-    
-    articleNames.forEach(articleName => {
-      // Check for exact matches or partial matches
-      Object.keys(productCustomizationData.crossSelling.articles).forEach(key => {
-        if (articleName.toLowerCase().includes(key.toLowerCase()) || 
-            key.toLowerCase().includes(articleName.toLowerCase())) {
-          const articleSuggestions = productCustomizationData.crossSelling.articles[key as keyof typeof productCustomizationData.crossSelling.articles];
-          if (articleSuggestions) {
-            suggestions.push(...articleSuggestions.suggest);
-          }
-        }
-      });
-    });
-    
+    // For now, we don't have article-specific cross-selling suggestions
+    // This could be extended later if needed
     return suggestions;
   }
   
@@ -151,7 +135,10 @@ export class CrossSellingService {
             // Filter articles by category using accountingTags (same as main page)
             const categoryArticles = articles.filter(article => {
               // Apply online shop filter (same as main page)
-              if (!(article.onlineShopCategories && article.onlineShopCategories.length > 0)) {
+              // Note: onlineShopCategories might not be available in all API responses
+              // This is a placeholder for proper category filtering
+              const hasOnlineShopCategories = (article as any).onlineShopCategories?.length > 0;
+              if (!hasOnlineShopCategories && article.accountingTags?.length === 0) {
                 return false;
               }
               

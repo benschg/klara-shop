@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   TextField,
   Box,
-  Typography,
   Alert,
 } from '@mui/material';
 import { TextCustomizationService, type TextCustomizationConfig } from '../services/textCustomizationService';

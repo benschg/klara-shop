@@ -13,7 +13,6 @@ import {
 import {
   ArrowBackIos,
   ArrowForwardIos,
-  CheckCircle,
   ShoppingCart,
 } from "@mui/icons-material";
 import { VariantTiles } from "./VariantTiles";
