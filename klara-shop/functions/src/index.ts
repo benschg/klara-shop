@@ -76,28 +76,60 @@ export const klaraApi = onRequest(
         );
       }
 
-      // Get response data
+      // Get response data and log details
       const contentType = klaraResponse.headers.get("content-type");
-      let responseData;
-
-      if (contentType && contentType.includes("application/json")) {
-        responseData = await klaraResponse.json();
-      } else {
-        responseData = await klaraResponse.text();
-      }
+      const contentLength = klaraResponse.headers.get("content-length");
+      
+      logger.info(`Response details:`, {
+        status: klaraResponse.status,
+        contentType: contentType,
+        contentLength: contentLength,
+        url: klaraUrl,
+        isImage: contentType?.startsWith("image/")
+      });
 
       // Set appropriate headers and return the response
       response.status(klaraResponse.status);
 
       // Copy relevant response headers
-      if (klaraResponse.headers.get("content-type")) {
+      if (contentType) {
+        response.set("Content-Type", contentType);
+        logger.info(`Set Content-Type: ${contentType}`);
+      }
+      if (contentLength) {
+        response.set("Content-Length", contentLength);
+        logger.info(`Set Content-Length: ${contentLength}`);
+      }
+      if (klaraResponse.headers.get("cache-control")) {
         response.set(
-          "Content-Type",
-          klaraResponse.headers.get("content-type")!
+          "Cache-Control",
+          klaraResponse.headers.get("cache-control")!
         );
       }
 
-      response.json(responseData);
+      // Handle different content types appropriately
+      if (contentType && contentType.includes("application/json")) {
+        logger.info("Processing as JSON response");
+        const responseData = await klaraResponse.json();
+        response.json(responseData);
+      } else if (contentType && contentType.startsWith("image/")) {
+        logger.info("Processing as image response");
+        try {
+          const imageBuffer = Buffer.from(await klaraResponse.arrayBuffer());
+          logger.info(`Image buffer size: ${imageBuffer.length} bytes`);
+          logger.info(`First 10 bytes: ${Array.from(imageBuffer.slice(0, 10)).map(b => '0x' + b.toString(16).padStart(2, '0')).join(' ')}`);
+          response.end(imageBuffer);
+          logger.info("Image response sent successfully");
+        } catch (imageError) {
+          logger.error("Error processing image:", imageError);
+          throw imageError;
+        }
+      } else {
+        logger.info(`Processing as text response, content-type: ${contentType}`);
+        const responseData = await klaraResponse.text();
+        logger.info(`Text response length: ${responseData.length}`);
+        response.send(responseData);
+      }
     } catch (error) {
       logger.error("Error proxying request to Klara API", error);
       response.status(500).json({
