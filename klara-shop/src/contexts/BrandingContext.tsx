@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import type { BrandingConfig } from '../types/branding';
 
 interface BrandingContextType {
@@ -16,8 +16,7 @@ interface BrandingProviderProps {
 }
 
 export const BrandingProvider: React.FC<BrandingProviderProps> = ({ 
-  children, 
-  configPath = '/src/config/branding.json' 
+  children
 }) => {
   const [branding, setBranding] = useState<BrandingConfig | null>(null);
   const [loading, setLoading] = useState(true);

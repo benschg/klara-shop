@@ -19,17 +19,6 @@ import {
 import { ArticleCard } from "./ArticleCard";
 import { ApiService } from "../services/apiService";
 
-// Inline type to avoid import issues
-type GetArticlesParams = {
-  limit?: number;
-  offset?: number;
-  productType?: {
-    id?: string;
-    name?: string;
-  };
-  sellInOnlineShop?: boolean;
-  categoryId?: string;
-};
 
 type ArticleCategory = {
   id?: string;
@@ -54,7 +43,7 @@ export const ArticleGrid: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [onlineShopOnly, setOnlineShopOnly] = useState(true);
-  const [categories, setCategories] = useState<ArticleCategory[]>([]);
+  const [, setCategories] = useState<ArticleCategory[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
   const [categoriesLoading, setCategoriesLoading] = useState(false);
 
@@ -154,7 +143,7 @@ export const ArticleGrid: React.FC = () => {
     const uniqueTags = new Set<string>();
     articlesToCheck.forEach((article) => {
       if (article.accountingTags && article.accountingTags.length > 0) {
-        article.accountingTags.forEach((tag) => uniqueTags.add(tag));
+        article.accountingTags.forEach((tag: string) => uniqueTags.add(tag));
       }
     });
 
@@ -230,7 +219,7 @@ export const ArticleGrid: React.FC = () => {
     ).length;
   };
 
-  const handleImageError = (imageUrl: string) => {
+  const handleImageError = () => {
     // Image failed to load
   };
 

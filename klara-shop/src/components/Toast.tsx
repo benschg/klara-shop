@@ -7,7 +7,7 @@ import {
   Typography,
   Avatar,
 } from '@mui/material';
-import { CheckCircle, ShoppingCart } from '@mui/icons-material';
+import { ShoppingCart } from '@mui/icons-material';
 import type { SlideProps } from '@mui/material/Slide';
 
 interface ToastProps {

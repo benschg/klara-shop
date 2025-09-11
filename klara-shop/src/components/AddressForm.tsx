@@ -34,7 +34,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
   title 
 }) => {
   const handleChange = (field: keyof Address) => (
-    event: React.ChangeEvent<HTMLInputElement | { value: unknown }>
+    event: any
   ) => {
     onChange({
       ...address,

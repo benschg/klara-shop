@@ -13,7 +13,6 @@ import {
 import {
   ArrowBackIos,
   ArrowForwardIos,
-  CheckCircle,
   ShoppingCart,
 } from "@mui/icons-material";
 import { VariantTiles } from "./VariantTiles";
@@ -69,11 +68,6 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
   const addItem = useCartStore((state) => state.addItem);
   const { showCartSuccessToast } = useToast();
 
-  const handleVariantImageChange = (imageIndex: number) => {
-    if (imageIndex >= 0 && imageIndex < images.length) {
-      setCurrentImageIndex(imageIndex);
-    }
-  };
 
   const handleVariantPriceChange = (price: number | null, variant: any) => {
     setVariantPrice(price);
@@ -330,9 +324,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
             <VariantTiles
               articleId={article.id!}
               articleOptions={article.options} // Pass the option structure
-              onVariantChange={handleVariantImageChange}
               onVariantPriceChange={handleVariantPriceChange}
-              totalImages={images.length}
             />
           ) : null;
         })()}

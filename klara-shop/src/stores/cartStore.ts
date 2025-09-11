@@ -126,7 +126,7 @@ export const useCartStore = create<CartStore>()(
         });
         
         // Show suggestion toast for the added item
-        const addedItem = { ...itemData, quantity };
+        const addedItem = { ...itemData, quantity, cartItemId: Date.now().toString() };
         setTimeout(() => get().showSuggestionToastFor(addedItem), 300);
       },
 
