@@ -1,4 +1,4 @@
-import crossSellingData from '../data/crossSellingSuggestions.json';
+import productCustomizationData from '../data/productCustomization.json';
 import type { CartItem } from '../stores/cartStore';
 import { ApiService } from './apiService';
 
@@ -20,7 +20,7 @@ export class CrossSellingService {
     const suggestions: CrossSellingSuggestion[] = [];
     
     categories.forEach(category => {
-      const categorySuggestions = crossSellingData.crossSelling.categories[category as keyof typeof crossSellingData.crossSelling.categories];
+      const categorySuggestions = productCustomizationData.crossSelling.categories[category as keyof typeof productCustomizationData.crossSelling.categories];
       if (categorySuggestions) {
         suggestions.push(...categorySuggestions.suggest);
       }
@@ -33,16 +33,16 @@ export class CrossSellingService {
     const suggestions: CrossSellingSuggestion[] = [];
     
     // Check if articles section exists in the data
-    if (!crossSellingData.crossSelling.articles) {
+    if (!productCustomizationData.crossSelling.articles) {
       return suggestions;
     }
     
     articleNames.forEach(articleName => {
       // Check for exact matches or partial matches
-      Object.keys(crossSellingData.crossSelling.articles).forEach(key => {
+      Object.keys(productCustomizationData.crossSelling.articles).forEach(key => {
         if (articleName.toLowerCase().includes(key.toLowerCase()) || 
             key.toLowerCase().includes(articleName.toLowerCase())) {
-          const articleSuggestions = crossSellingData.crossSelling.articles[key as keyof typeof crossSellingData.crossSelling.articles];
+          const articleSuggestions = productCustomizationData.crossSelling.articles[key as keyof typeof productCustomizationData.crossSelling.articles];
           if (articleSuggestions) {
             suggestions.push(...articleSuggestions.suggest);
           }
@@ -78,7 +78,7 @@ export class CrossSellingService {
   }
   
   public static async getSuggestionsForCart(cartItems: CartItem[]): Promise<CrossSellingSuggestion[]> {
-    if (cartItems.length < crossSellingData.rules.showAfterItemsInCart) {
+    if (cartItems.length < productCustomizationData.crossSelling.rules.showAfterItemsInCart) {
       return [];
     }
     
@@ -125,7 +125,7 @@ export class CrossSellingService {
     // Filter out categories already in cart if rule is enabled
     let filteredSuggestions = Array.from(uniqueSuggestions.values());
     
-    if (crossSellingData.rules.hideIfCategoryAlreadyInCart) {
+    if (productCustomizationData.crossSelling.rules.hideIfCategoryAlreadyInCart) {
       const existingCategories = this.getExistingCategoriesInCart(cartItems);
       filteredSuggestions = filteredSuggestions.filter(
         suggestion => !existingCategories.has(suggestion.category)
@@ -135,7 +135,7 @@ export class CrossSellingService {
     // Sort by priority and limit results
     const sortedSuggestions = filteredSuggestions
       .sort((a, b) => a.priority - b.priority)
-      .slice(0, crossSellingData.rules.maxSuggestions);
+      .slice(0, productCustomizationData.crossSelling.rules.maxSuggestions);
     
     // Fetch actual articles for each suggested category
     try {
@@ -214,7 +214,7 @@ export class CrossSellingService {
   }
   
   public static getFallbackSuggestion(category: string): string | null {
-    const fallback = crossSellingData.fallbackSuggestions[category as keyof typeof crossSellingData.fallbackSuggestions];
+    const fallback = productCustomizationData.crossSelling.fallbackSuggestions[category as keyof typeof productCustomizationData.crossSelling.fallbackSuggestions];
     return fallback?.message || null;
   }
 }

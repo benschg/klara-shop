@@ -15,6 +15,7 @@ import {
 import { Delete, Add, Remove, Close } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '../stores/cartStore';
+import { CustomTextInput } from './CustomTextInput';
 import type { CartItem } from '../stores/cartStore';
 
 interface CartDrawerProps {
@@ -28,18 +29,21 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
     totalItems, 
     totalPrice, 
     updateQuantity, 
-    removeItem
+    removeItem,
+    updateCustomText
   } = useCartStore();
   const navigate = useNavigate();
 
   const handleQuantityChange = (item: CartItem, newQuantity: number) => {
-    if (newQuantity > 0) {
-      updateQuantity(item.id, newQuantity, item.selectedVariant);
-    }
+    updateQuantity(item.id, newQuantity, item.selectedVariant, item.customText);
   };
 
   const handleRemoveItem = (item: CartItem) => {
-    removeItem(item.id, item.selectedVariant);
+    removeItem(item.id, item.selectedVariant, item.customText);
+  };
+
+  const handleCustomTextChange = (item: CartItem, text: string) => {
+    updateCustomText(item.id, text, item.selectedVariant, item.customText);
   };
 
   const formatVariantOptions = (variant?: { options: string[] }) => {
@@ -83,7 +87,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
           <>
             <List>
               {items.map((item, index) => (
-                <React.Fragment key={`${item.id}-${index}`}>
+                <React.Fragment key={item.cartItemId || `${item.id}-${index}`}>
                   <ListItem alignItems="flex-start" sx={{ px: 0 }}>
                     <Box sx={{ display: 'flex', width: '100%', gap: 2 }}>
                       {item.imageUrl && (
@@ -158,6 +162,15 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
                         <Typography variant="body2" color="primary" sx={{ fontWeight: 'medium' }}>
                           CHF {(item.price * item.quantity).toFixed(2)}
                         </Typography>
+
+                        {/* Custom text input for personalizable items */}
+                        <CustomTextInput
+                          article={{ nameDE: item.name, accountingTags: item.accountingTags || [] }}
+                          value={item.customText || ''}
+                          onChange={(text) => handleCustomTextChange(item, text)}
+                          variant="outlined"
+                          size="small"
+                        />
                       </Box>
                     </Box>
                   </ListItem>

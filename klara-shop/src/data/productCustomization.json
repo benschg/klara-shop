@@ -1,0 +1,82 @@
+{
+  "crossSelling": {
+    "categories": {
+      "Schnittblumen": {
+        "suggest": [
+          {
+            "category": "Karten",
+            "priority": 1,
+            "message": "Füge eine schöne Karte zu deinem Blumenstrauß hinzu"
+          },
+          {
+            "category": "Geschenkpapier",
+            "priority": 2,
+            "message": "Komplettiere dein Geschenk mit elegantem Geschenkpapier"
+          }
+        ]
+      },
+      "Blumenstrauss": {
+        "suggest": [
+          {
+            "category": "Karten",
+            "priority": 1,
+            "message": "Eine persönliche Karte macht dein Geschenk noch besonderer"
+          }
+        ]
+      }
+    },
+    "fallbackSuggestions": {
+      "Karten": {
+        "message": "Vergiss nicht eine passende Karte für dein Geschenk"
+      },
+      "Geschenkverpackung": {
+        "message": "Mache dein Geschenk noch schöner mit einer eleganten Verpackung"
+      }
+    },
+    "rules": {
+      "maxSuggestions": 5,
+      "showAfterItemsInCart": 1,
+      "hideIfCategoryAlreadyInCart": true,
+      "priorityOrder": "ascending"
+    }
+  },
+  "textCustomization": {
+    "categories": {
+      "Karten": {
+        "enabled": true,
+        "label": "Persönliche Nachricht",
+        "placeholder": "Deine persönliche Nachricht für die Karte...",
+        "maxLength": 200,
+        "required": false
+      },
+      "Geschenkgutschein": {
+        "enabled": true,
+        "label": "Empfänger Name",
+        "placeholder": "Name des Empfängers...",
+        "maxLength": 50,
+        "required": true
+      },
+      "Pralinen": {
+        "enabled": true,
+        "label": "Süße Nachricht",
+        "placeholder": "Eine süße Nachricht...",
+        "maxLength": 100,
+        "required": false
+      }
+    },
+    "articles": {
+      "Hochzeitskarte": {
+        "enabled": true,
+        "label": "Glückwunsch für das Brautpaar",
+        "placeholder": "Eure Namen und Glückwünsche...",
+        "maxLength": 300,
+        "required": false
+      }
+    },
+    "rules": {
+      "showInCart": true,
+      "showOnProduct": true,
+      "editableInCart": true
+    }
+  }
+}
