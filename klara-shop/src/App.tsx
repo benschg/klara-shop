@@ -5,14 +5,17 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { ArticleGrid } from './components/ArticleGrid';
 import { Header } from './components/Header';
 import { CartDrawer } from './components/CartDrawer';
+import { SuggestionToast } from './components/SuggestionToast';
 import { CheckoutPage } from './pages/CheckoutPage';
 import { ToastProvider } from './contexts/ToastContext';
 import { BrandingProvider } from './contexts/BrandingContext';
 import { useBrandedTheme } from './hooks/useBrandedTheme';
+import { useCartStore } from './stores/cartStore';
 
 const ThemedApp: React.FC = () => {
   const [cartOpen, setCartOpen] = useState(false);
   const brandedTheme = useBrandedTheme();
+  const { showSuggestionToast, currentSuggestionToast, closeSuggestionToast } = useCartStore();
 
   const handleCartOpen = () => {
     setCartOpen(true);
@@ -40,6 +43,13 @@ const ThemedApp: React.FC = () => {
           } />
           <Route path="/checkout" element={<CheckoutPage />} />
         </Routes>
+        
+        {/* Suggestion Toast - appears globally */}
+        <SuggestionToast
+          open={showSuggestionToast}
+          suggestion={currentSuggestionToast}
+          onClose={closeSuggestionToast}
+        />
       </Router>
     </ThemeProvider>
   );

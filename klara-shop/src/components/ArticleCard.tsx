@@ -17,8 +17,10 @@ import {
   ShoppingCart,
 } from "@mui/icons-material";
 import { VariantTiles } from "./VariantTiles";
+import { CustomTextInput } from "./CustomTextInput";
 import { useCartStore } from "../stores/cartStore";
 import { useToast } from "../contexts/ToastContext";
+import { TextCustomizationService } from "../services/textCustomizationService";
 // Article type definition
 type Article = {
   id?: string;
@@ -63,6 +65,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [variantPrice, setVariantPrice] = useState<number | null>(null);
+  const [customText, setCustomText] = useState<string>('');
   const addItem = useCartStore((state) => state.addItem);
   const { showCartSuccessToast } = useToast();
 
@@ -124,6 +127,13 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
       return;
     }
 
+    // Check if custom text is required but not provided
+    const textConfig = TextCustomizationService.getCustomizationConfig(article);
+    if (textConfig?.required && (!customText || customText.trim().length === 0)) {
+      alert(`${textConfig.label} ist erforderlich.`);
+      return;
+    }
+
     setIsAddingToCart(true);
 
     const cartItem = {
@@ -135,6 +145,8 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
         images.length > 0
           ? getProxiedImageUrl(images[currentImageIndex])
           : undefined,
+      customText: customText.trim() || undefined,
+      accountingTags: article.accountingTags || [],
       selectedVariant: selectedVariant
         ? {
             id: selectedVariant.id,
@@ -324,6 +336,14 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
             />
           ) : null;
         })()}
+
+        {/* Custom text input for personalizable products */}
+        <CustomTextInput
+          article={article}
+          value={customText}
+          onChange={setCustomText}
+          size="small"
+        />
 
         <Box
           sx={{

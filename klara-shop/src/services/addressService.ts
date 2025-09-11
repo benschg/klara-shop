@@ -50,7 +50,6 @@ class SwissAddressService {
         url = `${this.baseUrl}/ch/Localities?name=${encodeURIComponent(cleanQuery)}`;
       }
       
-      console.log('Fetching from:', url); // Debug log
       
       const response = await fetch(url, {
         method: 'GET',
@@ -66,7 +65,6 @@ class SwissAddressService {
       }
       
       const data = await response.json();
-      console.log('API Response:', data); // Debug log
       return data || [];
     } catch (error) {
       console.error('Error searching Swiss localities:', error);
@@ -114,7 +112,6 @@ class SwissAddressService {
       
       const url = `${this.baseUrl}/ch/Streets?name=${encodeURIComponent(streetQuery.trim())}`;
       
-      console.log('Fetching streets from:', url); // Debug log
       
       const response = await fetch(url, {
         method: 'GET',
@@ -129,7 +126,6 @@ class SwissAddressService {
       }
       
       const data = await response.json();
-      console.log('Street search response:', data); // Debug log
       return data || [];
     } catch (error) {
       console.error('Error searching streets by name:', error);
