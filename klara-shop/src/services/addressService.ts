@@ -137,10 +137,7 @@ class SwissAddressService {
    * Get address suggestions based on user input
    * This combines locality and street search for better UX
    */
-  async getAddressSuggestions(query: string, _currentAddress?: {
-    postalCode?: string;
-    city?: string;
-  }): Promise<AddressSuggestion[]> {
+  async getAddressSuggestions(query: string): Promise<AddressSuggestion[]> {
     const suggestions: AddressSuggestion[] = [];
     
     try {

@@ -16,8 +16,7 @@ interface BrandingProviderProps {
 }
 
 export const BrandingProvider: React.FC<BrandingProviderProps> = ({ 
-  children, 
-  configPath = '/src/config/branding.json' 
+  children
 }) => {
   const [branding, setBranding] = useState<BrandingConfig | null>(null);
   const [loading, setLoading] = useState(true);

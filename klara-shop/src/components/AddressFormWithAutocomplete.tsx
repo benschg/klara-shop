@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Grid,
   TextField,
@@ -11,11 +11,9 @@ import {
   Autocomplete,
   CircularProgress,
   Paper,
-  ListItem,
-  ListItemText,
   Chip,
 } from '@mui/material';
-import { LocationOn, Search } from '@mui/icons-material';
+import { LocationOn } from '@mui/icons-material';
 import type { Address } from '../types/checkout';
 import { useAddressAutocomplete } from '../hooks/useAddressAutocomplete';
 import { swissAddressService, type AddressSuggestion } from '../services/addressService';
@@ -178,7 +176,7 @@ export const AddressFormWithAutocomplete: React.FC<AddressFormWithAutocompletePr
               options={suggestions}
               loading={loading}
               value={null}
-              onChange={(event, newValue) => {
+              onChange={(_, newValue) => {
                 if (typeof newValue === 'string') {
                   // User typed a custom value
                   onChange({ ...address, street: newValue });
@@ -189,7 +187,7 @@ export const AddressFormWithAutocomplete: React.FC<AddressFormWithAutocompletePr
                 }
               }}
               inputValue={streetInputValue}
-              onInputChange={(event, newInputValue, reason) => {
+              onInputChange={(_, newInputValue, reason) => {
                 if (reason === 'input') {
                   setStreetInputValue(newInputValue);
                   onChange({ ...address, street: newInputValue });

@@ -36,17 +36,13 @@ interface VariantTilesProps {
     name: string;
     values: string[];
   }>;
-  onVariantChange?: (imageIndex: number) => void;
   onVariantPriceChange?: (variantPrice: number | null, selectedVariant: Variant | null) => void;
-  totalImages?: number;
 }
 
 export const VariantTiles: React.FC<VariantTilesProps> = ({ 
   articleId, 
   articleOptions,
-  onVariantChange, 
-  onVariantPriceChange,
-  totalImages = 0 
+  onVariantPriceChange 
 }) => {
   const [variants, setVariants] = useState<Variant[]>([]);
   const [loading, setLoading] = useState(true);

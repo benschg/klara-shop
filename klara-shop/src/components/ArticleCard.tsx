@@ -329,9 +329,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
             <VariantTiles
               articleId={article.id!}
               articleOptions={article.options} // Pass the option structure
-              onVariantChange={handleVariantImageChange}
               onVariantPriceChange={handleVariantPriceChange}
-              totalImages={images.length}
             />
           ) : null;
         })()}

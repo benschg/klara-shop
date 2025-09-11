@@ -29,7 +29,7 @@ export class CrossSellingService {
     return suggestions;
   }
   
-  private static getSuggestionsForArticles(_articleNames: string[]): CrossSellingSuggestion[] {
+  private static getSuggestionsForArticles(): CrossSellingSuggestion[] {
     const suggestions: CrossSellingSuggestion[] = [];
     
     // For now, we don't have article-specific cross-selling suggestions
@@ -92,7 +92,7 @@ export class CrossSellingService {
     
     // Get suggestions based on categories and articles
     const categorySuggestions = this.getSuggestionsForCategories(Array.from(categories));
-    const articleSuggestions = this.getSuggestionsForArticles(articleNames);
+    const articleSuggestions = this.getSuggestionsForArticles();
     
     // Combine and deduplicate suggestions
     const allSuggestions = [...categorySuggestions, ...articleSuggestions];

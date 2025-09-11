@@ -54,7 +54,7 @@ export const useAddressAutocomplete = ({
       setError(null);
 
       try {
-        const results = await swissAddressService.getAddressSuggestions(query, currentAddress);
+        const results = await swissAddressService.getAddressSuggestions(query);
         setSuggestions(results.slice(0, maxSuggestions));
       } catch (err) {
         console.error('Address autocomplete error:', err);
