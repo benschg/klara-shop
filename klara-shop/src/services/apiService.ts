@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 // import { Article, ProductType } from '../types/api';
 
 // Inline types to avoid import issues
@@ -83,15 +83,11 @@ type Variant = {
   variantOptionValues?: any[];
 };
 
-const API_BASE_URL = import.meta.env.DEV ? '/api' : (import.meta.env.VITE_KLARA_API_BASE_URL || 'https://api.klara.ch');
-const API_KEY = import.meta.env.VITE_KLARA_API_KEY;
+// const API_BASE_URL = import.meta.env.DEV ? '/api' : (import.meta.env.VITE_KLARA_API_BASE_URL || 'https://api.klara.ch');
+const API_BASE_URL = "/api";
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    ...(API_KEY && { 'X-API-Key': API_KEY }),
-  },
 });
 
 export type GetArticlesParams = {
@@ -108,103 +104,134 @@ export class ApiService {
   static async getArticles(params: GetArticlesParams = {}): Promise<Article[]> {
     try {
       const queryParams = new URLSearchParams();
-      
-      if (params.limit) queryParams.set('limit', params.limit.toString());
-      if (params.offset) queryParams.set('offset', params.offset.toString());
-      if (params.productType?.id) queryParams.set('product-type', params.productType.id);
+
+      if (params.limit) queryParams.set("limit", params.limit.toString());
+      if (params.offset) queryParams.set("offset", params.offset.toString());
+      if (params.productType?.id)
+        queryParams.set("product-type", params.productType.id);
       if (params.sellInOnlineShop !== undefined) {
-        queryParams.set('sell-in-online-shop', params.sellInOnlineShop.toString());
+        queryParams.set(
+          "sell-in-online-shop",
+          params.sellInOnlineShop.toString()
+        );
       }
       // Note: category filtering is done client-side since API doesn't support it
 
-      const url = `/core/latest/articles${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
-      
+      const url = `/core/latest/articles${
+        queryParams.toString() ? "?" + queryParams.toString() : ""
+      }`;
+
       const response = await apiClient.get(url);
-      
+
       return response.data;
     } catch (error) {
-      console.error('Error fetching articles:', error);
+      console.error("Error fetching articles:", error);
       if (axios.isAxiosError(error)) {
-        console.error('Response status:', error.response?.status);
-        console.error('Response data:', error.response?.data);
+        console.error("Response status:", error.response?.status);
+        console.error("Response data:", error.response?.data);
       }
-      throw new Error(`Failed to fetch articles: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to fetch articles: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   }
 
-  static async getArticleImage(articleId: string, imageId: string): Promise<Blob> {
+  static async getArticleImage(
+    articleId: string,
+    imageId: string
+  ): Promise<Blob> {
     try {
       const response = await apiClient.get(
         `/core/latest/articles/${articleId}/images/${imageId}`,
-        { responseType: 'blob' }
+        { responseType: "blob" }
       );
       return response.data;
     } catch (error) {
-      console.error('Error fetching article image:', error);
-      throw new Error('Failed to fetch article image');
+      console.error("Error fetching article image:", error);
+      throw new Error("Failed to fetch article image");
     }
   }
 
   static async getArticleCategories(): Promise<ArticleCategory[]> {
     try {
       const queryParams = new URLSearchParams();
-      queryParams.set('active-status', 'true'); // Only get active categories
-      
+      queryParams.set("active-status", "true"); // Only get active categories
+
       const url = `/core/latest/article-categories?${queryParams.toString()}`;
-      
+
       const response = await apiClient.get(url);
-      
+
       return response.data;
     } catch (error) {
-      console.error('Error fetching article categories:', error);
+      console.error("Error fetching article categories:", error);
       if (axios.isAxiosError(error)) {
-        console.error('Response status:', error.response?.status);
-        console.error('Response data:', error.response?.data);
+        console.error("Response status:", error.response?.status);
+        console.error("Response data:", error.response?.data);
       }
-      throw new Error(`Failed to fetch article categories: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to fetch article categories: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   }
 
   static async getArticleVariants(articleId: string): Promise<Variant[]> {
     try {
       const url = `/core/latest/articles/${articleId}/variants`;
-      
+
       const response = await apiClient.get(url);
-      
+
       return response.data;
     } catch (error) {
-      console.error('Error fetching article variants:', error);
+      console.error("Error fetching article variants:", error);
       if (axios.isAxiosError(error)) {
-        console.error('Response status:', error.response?.status);
-        console.error('Response data:', error.response?.data);
+        console.error("Response status:", error.response?.status);
+        console.error("Response data:", error.response?.data);
       }
-      throw new Error(`Failed to fetch article variants: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to fetch article variants: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   }
 
-
-  static async getArticlesAndVariants(params: GetArticlesParams = {}): Promise<ArticleAndVariant[]> {
+  static async getArticlesAndVariants(
+    params: GetArticlesParams = {}
+  ): Promise<ArticleAndVariant[]> {
     try {
       const queryParams = new URLSearchParams();
-      
-      if (params.limit) queryParams.set('limit', params.limit.toString());
-      if (params.offset) queryParams.set('offset', params.offset.toString());
+
+      if (params.limit) queryParams.set("limit", params.limit.toString());
+      if (params.offset) queryParams.set("offset", params.offset.toString());
       if (params.sellInOnlineShop !== undefined) {
-        queryParams.set('sell-in-online-shop', params.sellInOnlineShop.toString());
+        queryParams.set(
+          "sell-in-online-shop",
+          params.sellInOnlineShop.toString()
+        );
       }
 
-      const url = `/core/latest/articles/article-and-variants${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
-      
+      const url = `/core/latest/articles/article-and-variants${
+        queryParams.toString() ? "?" + queryParams.toString() : ""
+      }`;
+
       const response = await apiClient.get(url);
-      
+
       return response.data;
     } catch (error) {
-      console.error('Error fetching articles and variants:', error);
+      console.error("Error fetching articles and variants:", error);
       if (axios.isAxiosError(error)) {
-        console.error('Response status:', error.response?.status);
-        console.error('Response data:', error.response?.data);
+        console.error("Response status:", error.response?.status);
+        console.error("Response data:", error.response?.data);
       }
-      throw new Error(`Failed to fetch articles and variants: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to fetch articles and variants: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   }
 }

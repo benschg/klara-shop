@@ -64,10 +64,9 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [variantPrice, setVariantPrice] = useState<number | null>(null);
-  const [customText, setCustomText] = useState<string>('');
+  const [customText, setCustomText] = useState<string>("");
   const addItem = useCartStore((state) => state.addItem);
   const { showCartSuccessToast } = useToast();
-
 
   const handleVariantPriceChange = (price: number | null, variant: any) => {
     setVariantPrice(price);
@@ -123,7 +122,10 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
 
     // Check if custom text is required but not provided
     const textConfig = TextCustomizationService.getCustomizationConfig(article);
-    if (textConfig?.required && (!customText || customText.trim().length === 0)) {
+    if (
+      textConfig?.required &&
+      (!customText || customText.trim().length === 0)
+    ) {
       alert(`${textConfig.label} ist erforderlich.`);
       return;
     }
@@ -174,8 +176,11 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
 
   // Convert image URL to use proxy if in development
   const getProxiedImageUrl = (url: string) => {
-    if (import.meta.env.DEV && url.startsWith("https://api.klara.ch")) {
-      return url.replace("https://api.klara.ch", "/api");
+    if (url.startsWith("https://api.klara.ch")) {
+      return url.replace(
+        "https://api.klara.ch",
+        "https://avec-plaisir-shop.web.app/api"
+      );
     }
     return url;
   };
