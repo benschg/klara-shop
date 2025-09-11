@@ -25,6 +25,24 @@ export default defineConfig(({ mode }) => {
           }
         }
       }
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            // Separate React and React DOM into their own chunk
+            react: ['react', 'react-dom'],
+            // Separate Material-UI into its own chunk
+            mui: ['@mui/material', '@emotion/react', '@emotion/styled'],
+            // Separate Material-UI icons
+            'mui-icons': ['@mui/icons-material'],
+            // Separate routing
+            router: ['react-router-dom'],
+            // Separate state management and HTTP client
+            utils: ['zustand', 'axios']
+          }
+        }
+      }
     }
   }
 })
