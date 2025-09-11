@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { CrossSellingService, type CrossSellingSuggestion } from '../services/crossSellingService';
 
 // Cart item type
 export type CartItem = {
@@ -22,6 +23,10 @@ interface CartState {
   items: CartItem[];
   totalItems: number;
   totalPrice: number;
+  suggestions: CrossSellingSuggestion[];
+  suggestionsLoading: boolean;
+  showSuggestionToast: boolean;
+  currentSuggestionToast: CrossSellingSuggestion | null;
 }
 
 // Cart store actions
@@ -31,6 +36,10 @@ interface CartActions {
   updateQuantity: (id: string, quantity: number, selectedVariant?: { id: string }) => void;
   clearCart: () => void;
   getCartItemKey: (id: string, selectedVariant?: { id: string }) => string;
+  refreshSuggestions: () => Promise<void>;
+  dismissSuggestion: (category: string) => void;
+  showSuggestionToastFor: (item: CartItem) => Promise<void>;
+  closeSuggestionToast: () => void;
 }
 
 // Combined cart store type
@@ -63,6 +72,10 @@ export const useCartStore = create<CartStore>()(
       items: [],
       totalItems: 0,
       totalPrice: 0,
+      suggestions: [],
+      suggestionsLoading: false,
+      showSuggestionToast: false,
+      currentSuggestionToast: null,
 
       // Actions
       addItem: (item) => {
@@ -97,6 +110,10 @@ export const useCartStore = create<CartStore>()(
             totalPrice,
           };
         });
+        
+        // Show suggestion toast for the added item
+        const addedItem = { ...itemData, quantity };
+        setTimeout(() => get().showSuggestionToastFor(addedItem), 300);
       },
 
       removeItem: (id, selectedVariant) => {
@@ -116,6 +133,9 @@ export const useCartStore = create<CartStore>()(
             totalPrice,
           };
         });
+        
+        // Refresh suggestions after removing item
+        setTimeout(() => get().refreshSuggestions(), 100);
       },
 
       updateQuantity: (id, quantity, selectedVariant) => {
@@ -143,6 +163,9 @@ export const useCartStore = create<CartStore>()(
             totalPrice,
           };
         });
+        
+        // Refresh suggestions after updating quantity
+        setTimeout(() => get().refreshSuggestions(), 100);
       },
 
       clearCart: () => {
@@ -150,7 +173,63 @@ export const useCartStore = create<CartStore>()(
           items: [],
           totalItems: 0,
           totalPrice: 0,
+          suggestions: [],
+          suggestionsLoading: false,
         });
+      },
+
+      refreshSuggestions: async () => {
+        set((state) => ({ ...state, suggestionsLoading: true }));
+        
+        try {
+          const suggestions = await CrossSellingService.getSuggestionsForCart(get().items);
+          set((state) => ({ 
+            ...state, 
+            suggestions,
+            suggestionsLoading: false 
+          }));
+        } catch (error) {
+          console.error('Failed to refresh suggestions:', error);
+          set((state) => ({ 
+            ...state, 
+            suggestionsLoading: false 
+          }));
+        }
+      },
+
+      dismissSuggestion: (category: string) => {
+        set((state) => ({
+          ...state,
+          suggestions: state.suggestions.filter(s => s.category !== category)
+        }));
+      },
+
+      showSuggestionToastFor: async (item: CartItem) => {
+        try {
+          // Create a temporary cart with just this item to get suggestions
+          const tempCartItems = [item];
+          const suggestions = await CrossSellingService.getSuggestionsForCart(tempCartItems);
+          
+          if (suggestions.length > 0) {
+            // Show the first (highest priority) suggestion as toast
+            const topSuggestion = suggestions[0];
+            set((state) => ({
+              ...state,
+              currentSuggestionToast: topSuggestion,
+              showSuggestionToast: true,
+            }));
+          }
+        } catch (error) {
+          console.error('Failed to show suggestion toast:', error);
+        }
+      },
+
+      closeSuggestionToast: () => {
+        set((state) => ({
+          ...state,
+          showSuggestionToast: false,
+          currentSuggestionToast: null,
+        }));
       },
 
       getCartItemKey,
@@ -171,6 +250,8 @@ export const useCartStore = create<CartStore>()(
         items: state.items,
         totalItems: state.totalItems,
         totalPrice: state.totalPrice,
+        suggestions: state.suggestions,
+        // Don't persist toast state - it should be ephemeral
       }),
     }
   )

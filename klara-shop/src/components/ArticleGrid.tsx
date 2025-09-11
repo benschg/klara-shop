@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Grid,
   Container,
@@ -44,6 +45,7 @@ type ArticleCategory = {
 const ITEMS_PER_PAGE = 12;
 
 export const ArticleGrid: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [allArticles, setAllArticles] = useState<any[]>([]); // All fetched articles
   const [filteredArticles, setFilteredArticles] = useState<any[]>([]); // Filtered articles
   const [displayedArticles, setDisplayedArticles] = useState<any[]>([]); // Current page articles
@@ -55,6 +57,14 @@ export const ArticleGrid: React.FC = () => {
   const [categories, setCategories] = useState<ArticleCategory[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
   const [categoriesLoading, setCategoriesLoading] = useState(false);
+
+  // Initialize selectedCategoryId from URL params
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get('category');
+    if (categoryFromUrl) {
+      setSelectedCategoryId(categoryFromUrl);
+    }
+  }, [searchParams]);
 
   const loadArticles = async () => {
     try {
@@ -183,8 +193,16 @@ export const ArticleGrid: React.FC = () => {
   };
 
   const handleCategoryChange = (event: any) => {
-    setSelectedCategoryId(event.target.value);
+    const categoryId = event.target.value;
+    setSelectedCategoryId(categoryId);
     setCurrentPage(1); // Reset to first page when filter changes
+    
+    // Update URL params
+    if (categoryId) {
+      setSearchParams({ category: categoryId });
+    } else {
+      setSearchParams({});
+    }
   };
 
   const getCategoryDisplayName = (category: ArticleCategory) => {

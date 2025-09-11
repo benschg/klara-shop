@@ -1,0 +1,41 @@
+{
+  "crossSelling": {
+    "categories": {
+      "Schnittblumen": {
+        "suggest": [
+          {
+            "category": "Karten",
+            "priority": 1,
+            "message": "Füge eine schöne Karte zu deinem Blumenstrauß hinzu"
+          },
+          {
+            "category": "Geschenkpapier",
+            "priority": 2,
+            "message": "Komplettiere dein Geschenk mit elegantem Geschenkpapier"
+          }
+        ]
+      },
+      "Blumenstrauss": {
+        "suggest": [
+          {
+            "category": "Karten",
+            "priority": 1,
+            "message": "Eine persönliche Karte macht dein Geschenk noch besonderer"
+              }        ]
+      }}
+  },
+  "fallbackSuggestions": {
+    "Karten": {
+      "message": "Vergiss nicht eine passende Karte für dein Geschenk"
+    },
+    "Geschenkverpackung": {
+      "message": "Mache dein Geschenk noch schöner mit einer eleganten Verpackung"
+    }
+  },
+  "rules": {
+    "maxSuggestions": 5,
+    "showAfterItemsInCart": 1,
+    "hideIfCategoryAlreadyInCart": true,
+    "priorityOrder": "ascending"
+  }
+}

@@ -23,7 +23,13 @@ interface CartDrawerProps {
 }
 
 export const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
-  const { items, totalItems, totalPrice, updateQuantity, removeItem } = useCartStore();
+  const { 
+    items, 
+    totalItems, 
+    totalPrice, 
+    updateQuantity, 
+    removeItem
+  } = useCartStore();
   const navigate = useNavigate();
 
   const handleQuantityChange = (item: CartItem, newQuantity: number) => {
@@ -42,6 +48,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
   };
 
   const drawerWidth = 400;
+
 
   return (
     <>
