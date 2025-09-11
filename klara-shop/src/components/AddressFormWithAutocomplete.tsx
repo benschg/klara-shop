@@ -61,7 +61,7 @@ export const AddressFormWithAutocomplete: React.FC<AddressFormWithAutocompletePr
   }, [address.street]);
 
   const handleChange = (field: keyof Address) => (
-    event: React.ChangeEvent<HTMLInputElement | { value: unknown }>
+    event: any
   ) => {
     const newValue = event.target.value as string;
     onChange({

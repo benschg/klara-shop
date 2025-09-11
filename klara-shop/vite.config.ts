@@ -2,7 +2,7 @@ import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
-export default defineConfig(({ command, mode }) => {
+export default defineConfig(({ mode }) => {
   // Load env file based on `mode` in the current working directory.
   const env = loadEnv(mode, process.cwd(), '')
   
@@ -15,14 +15,11 @@ export default defineConfig(({ command, mode }) => {
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, ''),
           secure: true,
-          configure: (proxy, options) => {
-            proxy.on('proxyReq', (proxyReq, req, res) => {
+          configure: (proxy) => {
+            proxy.on('proxyReq', (proxyReq) => {
               // Add API key to all proxied requests
               if (env.VITE_KLARA_API_KEY) {
                 proxyReq.setHeader('X-API-Key', env.VITE_KLARA_API_KEY);
-                console.log('Adding API key to proxy request');
-              } else {
-                console.log('No API key found in environment');
               }
             });
           }

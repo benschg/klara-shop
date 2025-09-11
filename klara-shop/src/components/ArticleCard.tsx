@@ -68,11 +68,6 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
   const addItem = useCartStore((state) => state.addItem);
   const { showCartSuccessToast } = useToast();
 
-  const handleVariantImageChange = (imageIndex: number) => {
-    if (imageIndex >= 0 && imageIndex < images.length) {
-      setCurrentImageIndex(imageIndex);
-    }
-  };
 
   const handleVariantPriceChange = (price: number | null, variant: any) => {
     setVariantPrice(price);
